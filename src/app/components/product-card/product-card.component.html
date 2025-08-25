@@ -1,0 +1,10 @@
+<article class="card">
+  <a [routerLink]="['/product', product.id]" class="img-wrap">
+    <img [src]="product.image" [alt]="product.title" />
+  </a>
+  <div class="info">
+    <h3 class="title">{{ product.title }}</h3>
+    <div class="price">{{ product.price | currency:'USD':'symbol':'1.0-0' }}</div>
+    <button class="btn" (click)="add.emit(product)">Add to bag</button>
+  </div>
+</article>
