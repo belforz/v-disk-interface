@@ -1,9 +1,7 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from "tailwindcss";
+
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx,css}"
-  ],
+  content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx,css}"],
   theme: {
     extend: {
       fontFamily: {
@@ -14,5 +12,4 @@ export default {
     }
   },
   plugins: []
-}
-
+} satisfies Config;

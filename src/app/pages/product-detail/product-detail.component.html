@@ -1,9 +1,0 @@
-<div *ngIf="product" class="detail">
-  <img [src]="product.image" [alt]="product.title" />
-  <div class="meta">
-    <h1>{{ product.title }}</h1>
-    <p class="price">{{ product.price | currency:'USD' }}</p>
-    <p class="desc">{{ product.description }}</p>
-    <button class="btn" (click)="add()">Add to bag</button>
-  </div>
-</div>
