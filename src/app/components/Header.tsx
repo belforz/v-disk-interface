@@ -1,7 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { useCart } from "@app/store/cart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBagShopping, faCompactDisc } from "@fortawesome/free-solid-svg-icons";
+import { faBagShopping, faCompactDisc, faUser } from "@fortawesome/free-solid-svg-icons";
 
 export function Header() {
   const count = useCart(s => s.count());
@@ -15,15 +15,18 @@ export function Header() {
         </div>
 
         <Link to="/" className="text-white">
-          <FontAwesomeIcon icon={faCompactDisc} size="lg" className="text-xl" />
+          <FontAwesomeIcon icon={faCompactDisc} className="text-2xl" />
         </Link>
 
         <div className="flex items-center gap-6">
           <a className="nav-link" href="#">Location</a>
-          <a className="nav-link" href="#">Notes</a>
-          <a className="nav-link" href="#">Login</a>
 
-          <Link to="/cart" className="relative nav-link">
+          <Link to="/login" className="relative nav-link hover:">
+            <FontAwesomeIcon icon={faUser} className="mr-2" />
+            Login
+          </Link>
+
+           <Link to="/cart" className="relative nav-link">
             <FontAwesomeIcon icon={faBagShopping} className="mr-2" />
             Bag
             {count > 0 && (
@@ -32,6 +35,19 @@ export function Header() {
               </span>
             )}
           </Link>
+
+          {/* <a className="nav-link" href="#">Notes</a> */}
+
+          {/* <Link to="/cart" className="relative nav-link">
+            <FontAwesomeIcon icon={faBagShopping} className="mr-2" />
+            Bag
+            {count > 0 && (
+              <span className="absolute -right-5 -top-0.5 text-[10px] bg-white text-black rounded-full px-1.5 py-0.6">
+                {count}
+              </span>
+            )}
+          </Link> */}
+
         </div>
       </nav>
     </header>

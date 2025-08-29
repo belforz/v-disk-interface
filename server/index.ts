@@ -4,44 +4,63 @@ import cors from "@fastify/cors";
 const app = Fastify({ logger: false });
 await app.register(cors, { origin: true });
 
-type Product = {
+type Vinyl = {
   id: string;
   slug: string;
-  name: string;
+  title: string;
+  artist: string;
   price: number;
-  images: string[];
-  caption?: string;
+  stock: number;
+  coverPath: string;
+  gallery: string[];
+  createdAt: string;
+  updatedAt: string;
 };
 
-const products: Product[] = [
+const vinyls: Vinyl[] = [
   {
     id: "1",
     slug: "beyonce-x-levis-90s-shrunken-trucker-western-crystal",
-    name: "BEYONCÉ X LEVI’S® 90s SHRUNKEN TRUCKER WESTERN CRYSTAL",
+    title: "BEYONCÉ X LEVI’S® 90s SHRUNKEN TRUCKER WESTERN CRYSTAL",
+    artist: "Beyoncé",
     price: 250,
-    images: ["/images/jacket-western-crystal.png"]
+    stock: 10,
+    coverPath: "/images/jacket-western-crystal.png",
+    gallery: ["/images/jacket-western-crystal.png"],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: "2",
     slug: "beyonce-x-levis-90s-shrunken-trucker-laced-up",
-    name: "BEYONCÉ X LEVI’S® 90s SHRUNKEN TRUCKER LACED UP",
+    title: "BEYONCÉ X LEVI’S® 90s SHRUNKEN TRUCKER LACED UP",
+    artist: "Beyoncé",
     price: 230,
-    images: ["/images/jacket-laced.png"]
+    stock: 8,
+    coverPath: "/images/jacket-laced.png",
+    gallery: ["/images/jacket-laced.png"],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: "3",
     slug: "beyonce-x-levis-501-curve-western-crystal",
-    name: "BEYONCÉ X LEVI’S® 501® CURVE WESTERN CRYSTAL",
+    title: "BEYONCÉ X LEVI’S® 501® CURVE WESTERN CRYSTAL",
+    artist: "Beyoncé",
     price: 150,
-    images: ["/images/jeans-curve.png"]
+    stock: 5,
+    coverPath: "/images/jeans-curve.png",
+    gallery: ["/images/jeans-curve.png"],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 
-app.get("/api/products", async () => products);
+app.get("/api/products", async () => vinyls);
 
 app.get("/api/products/:slug", async (req, reply) => {
   const { slug } = req.params as { slug: string };
-  const found = products.find(p => p.slug === slug);
+  const found = vinyls.find(v => v.slug === slug);
   if (!found) return reply.code(404).send({ message: "Product not found" });
   return found;
 });

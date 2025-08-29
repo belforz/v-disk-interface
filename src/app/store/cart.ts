@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import type { CartItem, Product } from "@app/types";
+import type { CartItem, Vinyl } from "@app/types";
 
 type CartState = {
   items: CartItem[];
-  add: (p: Product, qty?: number) => void;
+  add: (p: Vinyl, qty?: number) => void;
   inc: (id: string) => void;
   dec: (id: string) => void;
   remove: (id: string) => void;
@@ -29,9 +29,9 @@ export const useCart = create<CartState>((set, get) => ({
           ...s.items,
           {
             id: p.id,
-            name: p.name,
+            name: p.title,
             price: p.price,
-            image: p.images?.[0],
+            image: p.coverPath,
             qty
           }
         ]

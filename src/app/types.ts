@@ -1,10 +1,13 @@
-export type Product = {
+export type Vinyl =  {
   id: string;
-  slug: string;
-  name: string;
+  title: string;
+  artist: string;
   price: number;
-  images: string[];
-  caption?: string;
+  stock: number;
+  coverPath: string;
+  gallery: string[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CartItem = {
@@ -14,3 +17,12 @@ export type CartItem = {
   image?: string;
   qty: number;
 };
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  roles: string[];
+  emailVerified: boolean;
+  createdAt: string;
+}
