@@ -1,7 +1,7 @@
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
-import ForgotPasswordPage from "./ForgetPassword";
+import ForgotPasswordPage from "../login/ForgetPassword";
 
 export function LogInSection() {
   const [forgetPassword, setForgetPassword] = useState(false);
@@ -12,7 +12,7 @@ export function LogInSection() {
   return (
     <>
       <section className="w-full max-w-md border border-white/10 bg-black/60 p-5 md:p-6 rounded-none">
-        <h2 className="text-sm uppercase tracking-widest text-white/80 mb-4">
+        <h2 className="flex justify-center text-sm uppercase tracking-widest text-white/80 mb-4">
           Log in
         </h2>
 

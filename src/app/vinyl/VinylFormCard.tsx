@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import type { Vinyl } from "@app/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFloppyDisk, faPen, faTrash, faXmark, faPlus, faEye } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFloppyDisk,
+  faPen,
+  faTrash,
+  faXmark,
+  faPlus,
+  faEye,
+} from "@fortawesome/free-solid-svg-icons";
 
 type Mode = "create" | "edit" | "view";
 
 type Props = {
   mode: Mode;
-  data?: Vinyl; 
+  data?: Vinyl;
   onSubmit?: (vinyl: Vinyl) => void;
   onDelete?: (id: string) => void;
   onCancel?: () => void;
@@ -23,11 +30,17 @@ function emptyVinyl(): Vinyl {
     coverPath: "",
     gallery: [],
     createdAt: new Date().toISOString() as any,
-    updatedAt: new Date().toISOString() as any
+    updatedAt: new Date().toISOString() as any,
   };
 }
 
-export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel }: Props) {
+export default function VinylFormCard({
+  mode,
+  data,
+  onSubmit,
+  onDelete,
+  onCancel,
+}: Props) {
   const isViewMode = mode === "view";
   const isEditMode = mode === "edit";
   const isCreateMode = mode === "create";
@@ -49,25 +62,25 @@ export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel
     const payload: Vinyl = {
       ...formData,
       createdAt: formData.createdAt ?? (new Date().toISOString() as any),
-      updatedAt: new Date().toISOString() as any
+      updatedAt: new Date().toISOString() as any,
     };
 
     onSubmit?.(payload);
   }
 
-  function handleDelete(e: React.MouseEvent<HTMLButtonElement>){
+  function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     if (isCreateMode || !formData.id) return;
 
     onDelete?.(formData.id);
   }
 
-  function handleCancel(e: React.MouseEvent<HTMLButtonElement>){
+  function handleCancel(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     onCancel?.();
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>){
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
@@ -92,9 +105,24 @@ export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel
     <div className="border border-white/10 bg-black/60 p-4 md:p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-sm">
-          {isCreateMode && (<><FontAwesomeIcon icon={faPlus} /><span>New Vinyl</span></>)}
-          {isEditMode && (<><FontAwesomeIcon icon={faPen} /><span>Edit Vinyl</span></>)}
-          {isViewMode && (<><FontAwesomeIcon icon={faEye} /><span>View Vinyl</span></>)}
+          {isCreateMode && (
+            <>
+              <FontAwesomeIcon icon={faPlus} />
+              <span>New Vinyl</span>
+            </>
+          )}
+          {isEditMode && (
+            <>
+              <FontAwesomeIcon icon={faPen} />
+              <span>Edit Vinyl</span>
+            </>
+          )}
+          {isViewMode && (
+            <>
+              <FontAwesomeIcon icon={faEye} />
+              <span>View Vinyl</span>
+            </>
+          )}
         </div>
 
         <div className="flex gap-2">
@@ -121,34 +149,34 @@ export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 items-start">
-       <div
-        className="bg-neutral-900 border border-white/10 mb-4 p-2 cursor-pointer"
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        {preview ? (
-          <img
-            src={preview}
-            alt={formData.title || "vinyl"}
-            className="w-full aspect-[3/4] object-cover object-center"
-          />
-        ) : (
-          <div className="w-full aspect-[3/4] grid place-items-center text-xs text-white/50">
-            Drag an image or select a file.
-          </div>
-        )}
+        <div
+          className="bg-neutral-900 border border-white/10 mb-4 p-2 cursor-pointer"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {preview ? (
+            <img
+              src={preview}
+              alt={formData.title || "vinyl"}
+              className="w-full aspect-[3/4] object-cover object-center"
+            />
+          ) : (
+            <div className="w-full aspect-[3/4] grid place-items-center text-xs text-white/50">
+              Drag an image or select a file.
+            </div>
+          )}
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          capture
-          className="hidden"
-          onChange={handleFileChange}
-          disabled={isViewMode}
-        />
-      </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={isViewMode}
+          />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 flex flex-col ">
           <label className="block">
@@ -156,19 +184,22 @@ export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel
             <input
               className="mt-1 w-full bg-black border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"
               value={formData.title}
-              onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, title: e.target.value }))
+              }
               disabled={isViewMode}
               placeholder="Vinyl Title"
             />
           </label>
 
-
-           <label className="block">
+          <label className="block">
             <span className="text-xs text-white/60">Artist</span>
             <input
               className="mt-1 w-full bg-black border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"
               value={formData.artist}
-              onChange={(e) => setFormData((p) => ({ ...p, artist: e.target.value }))}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, artist: e.target.value }))
+              }
               disabled={isViewMode}
               placeholder="Artist"
               min={0}
@@ -181,7 +212,9 @@ export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel
               type="number"
               className="mt-1 w-full bg-black border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"
               value={formData.price}
-              onChange={(e) => setFormData((p) => ({ ...p, price: Number(e.target.value) || 0 }))}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, price: Number(e.target.value) }))
+              }
               disabled={isViewMode}
               min={0}
             />
@@ -193,7 +226,9 @@ export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel
               className="mt-1 w-full bg-black border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"
               type="number"
               value={formData.stock}
-              onChange={(e) => setFormData((p) => ({ ...p, stock: Number(e.target.value) || 0 }))}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, stock: Number(e.target.value) }))
+              }
               disabled={isViewMode}
               placeholder="Vinyl Quantity"
               min={0}
@@ -205,7 +240,9 @@ export default function VinylFormCard({ mode, data, onSubmit, onDelete, onCancel
             <input
               className="mt-1 w-full bg-black border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"
               value={formData.coverPath}
-              onChange={(e) => setFormData((p) => ({ ...p, coverPath: e.target.value }))}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, coverPath: e.target.value }))
+              }
               disabled={isViewMode}
               placeholder="/images/vinyl-01.png"
             />

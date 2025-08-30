@@ -1,18 +1,19 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "@app/home/HomePage";
-import ProductPage from "@app/product/ProductPage";
+import ProductPage from "@app/vinyl/VinylPage";
 import CartPage from "@app/cart/CartPage";
 import { Header } from "@app/components/Header";
 import { Footer } from "@app/components/Footer";
 import LoginPage from "./login/LoginPage";
 import RolePage from "./login/role/rolePage";
-
 import SignUp from "./login/SingUp";
+import VerifyEmailPage from "./email/VerifyEmailPage";
+import NotFoundPage from "./NotFound";
 
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <div className="min-h-full flex flex-col">
+      <main className="min-h-full flex flex-col">
         <Header />
         <div className="flex-1">
           <Routes>
@@ -22,13 +23,13 @@ export function AppRouter() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/login/:role" element={<RolePage />} />
-            
-            <Route path="*" element={<div className="mx-auto max-w-4xl px-4 py-10">Page not found</div>} />
-            
+            <Route path="/email-verification" element={<VerifyEmailPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+
           </Routes>
         </div>
         <Footer />
-      </div>
+      </main>
     </BrowserRouter>
   );
 }

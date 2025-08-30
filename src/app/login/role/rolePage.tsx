@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import OrderCardSimple, { OrderMini } from "@app/components/OrderCard";
+import OrderCardSimple, { OrderMini } from "@app/cart/OrderCard";
 import { VinylCard } from "@app/components/VinylCard";
-import VinylFormCard from "@app/components/VinylFormCard";
+import VinylFormCard from "@app/vinyl/VinylFormCard";
 import { Vinyl } from "@app/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -84,14 +84,14 @@ export default function RolePage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <section className="mx-auto max-w-5xl px-4 py-10">
       <div className="flex flex-col items-center">
         {role === "admin" ? (
           <img
-            src="/images/v-disk-login.png"
+            src="/images/v-disk-admin.png"
             className="w-full max-w-[200px] sm:max-w-[260px] md:max-w-[320px] lg:max-w-[400px] aspect-square object-cover"
             loading="lazy"
-            alt="v-disk login"
+            alt="v-disk admin"
           />
         ) : (
           <img
@@ -194,6 +194,6 @@ export default function RolePage() {
           <OrderCardSimple order={mockOrder} onView={(id) => console.log("ver", id)} />
         </>
       )}
-    </main>
+    </section>
   );
 }

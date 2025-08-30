@@ -18,7 +18,7 @@ export default function HomePage() {
   
 
   return (
-    <main className="mx-auto max-w-7xl px-4">
+    <section className="mx-auto max-w-7xl px-4">
       <section className="py-10 md:py-14">
         <h1 className="sr-only">Beyoncé x Levi’s — coleção</h1>
 
@@ -35,6 +35,6 @@ export default function HomePage() {
         
         </div>
       </section>
-    </main>
+    </section>
   );
 }

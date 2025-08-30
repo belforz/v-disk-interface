@@ -8,8 +8,9 @@ export function VinylCard({ vinyl }: Props) {
   const add = useCart((s) => s.add);
   const { role } = useParams();
 
-  const src =
-    Array.isArray(vinyl.coverPath) ? vinyl.coverPath[0] : vinyl.coverPath || "/images/placeholder.png";
+  const src = Array.isArray(vinyl.coverPath)
+    ? vinyl.coverPath[0]
+    : vinyl.coverPath || "/images/placeholder.png";
 
   return (
     <div className="group ">
@@ -21,21 +22,30 @@ export function VinylCard({ vinyl }: Props) {
       />
 
       <div className="mt-4 space-y-1">
-        <h3 className="text-white font-semibold text-sm truncate">{vinyl.title}</h3>
+        <h3 className="text-white font-semibold text-sm truncate">
+          {vinyl.title}
+        </h3>
 
         <div className="text-white/60 text-xs">$ {vinyl.price} USD</div>
 
-        <div className="text-white/60 text-xs truncate">Artist: {vinyl.artist}</div>
+        <div className="text-white/60 text-xs truncate">
+          Artist: {vinyl.artist}
+        </div>
 
-        {role == "admin"&& (
-          <><div className="text-white/60 text-xs truncate">Stock: {vinyl.stock}</div>
-          <div className="text-white/60 text-xs truncate">CoverPath: {vinyl.coverPath}</div>
-          <div className="text-white/60 text-xs truncate">Gallery: {vinyl.gallery.join(", ")}</div>
-          <div className="text-white/60 text-xs truncate">ID: {vinyl.id}</div>
-
+        {role == "admin" && (
+          <>
+            <div className="text-white/60 text-xs truncate">
+              Stock: {vinyl.stock}
+            </div>
+            <div className="text-white/60 text-xs truncate">
+              CoverPath: {vinyl.coverPath}
+            </div>
+            <div className="text-white/60 text-xs truncate">
+              Gallery: {vinyl.gallery.join(", ")}
+            </div>
+            <div className="text-white/60 text-xs truncate">ID: {vinyl.id}</div>
           </>
-        )
-        }
+        )}
 
         {role !== "admin" && (
           <div className="mt-2 ">

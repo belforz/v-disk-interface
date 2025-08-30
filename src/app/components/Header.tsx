@@ -1,17 +1,27 @@
 import { Link, NavLink } from "react-router-dom";
 import { useCart } from "@app/store/cart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBagShopping, faCompactDisc, faUser } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBagShopping,
+  faCompactDisc,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 export function Header() {
-  const count = useCart(s => s.count());
+  const count = useCart((s) => s.count());
   return (
     <header className="sticky top-0 z-20 bg-black/80 backdrop-blur border-b border-white/10">
       <nav className="mx-auto max-w-7xl px-4 h-10 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <NavLink to="/" className="nav-link">Home</NavLink>
-          <a className="nav-link" href="#">Disks</a>
-          <a className="nav-link" href="#">Artists</a>
+          <NavLink to="/" className="nav-link">
+            Home
+          </NavLink>
+          <a className="nav-link" href="#">
+            Disks
+          </a>
+          <a className="nav-link" href="#">
+            Artists
+          </a>
         </div>
 
         <Link to="/" className="text-white">
@@ -19,14 +29,16 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-6">
-          <a className="nav-link" href="#">Location</a>
+          <a className="nav-link" href="#">
+            Location
+          </a>
 
           <Link to="/login" className="relative nav-link hover:">
             <FontAwesomeIcon icon={faUser} className="mr-2" />
             Login
           </Link>
 
-           <Link to="/cart" className="relative nav-link">
+          <Link to="/cart" className="relative nav-link">
             <FontAwesomeIcon icon={faBagShopping} className="mr-2" />
             Bag
             {count > 0 && (
@@ -47,7 +59,6 @@ export function Header() {
               </span>
             )}
           </Link> */}
-
         </div>
       </nav>
     </header>

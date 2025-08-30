@@ -26,7 +26,7 @@ export default function VinylPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="grid md:grid-cols-2 gap-10 items-start">
         <div className="bg-neutral-900">
           <img
@@ -54,6 +54,6 @@ export default function VinylPage() {
           )}
         </div>
       </div>
-    </main>
+    </section>
   );
 }

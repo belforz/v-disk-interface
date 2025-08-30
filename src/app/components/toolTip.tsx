@@ -9,9 +9,7 @@ export function ToolTip({ content, children }: ToolTipProps) {
   return (
     <Tooltip.Provider>
       <Tooltip.Root>
-        <Tooltip.Trigger asChild>
-          {children}
-        </Tooltip.Trigger>
+        <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content
             side="top"

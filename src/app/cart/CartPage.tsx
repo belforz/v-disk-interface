@@ -1,13 +1,13 @@
 import { useCart } from "@app/store/cart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { ToolTip } from "@app/components/utils/toolTip";
+import { ToolTip } from "@app/components/toolTip";
 
 export default function CartPage() {
   const { items, inc, dec, remove, total, clear } = useCart();
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <section className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="font-display text-2xl uppercase tracking-wider mb-8">Bag</h1>
 
       {items.length === 0 ? (
@@ -72,6 +72,6 @@ export default function CartPage() {
           </aside>
         </div>
       )}
-    </main>
+    </section>
   );
 }

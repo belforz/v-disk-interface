@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
 
         <p className="mt-5 text-center text-[11px] text-white/60">
           Still need help?{" "}
-          <a href="#" className="underline hover:text-white">
+          <a href="mailto:macedobeiramar@hotmail.com" className="underline hover:text-white">
             Contact Support
           </a>
         </p>
