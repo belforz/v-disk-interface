@@ -10,13 +10,19 @@ export type Vinyl =  {
   updatedAt: string;
 };
 
-export type CartItem = {
-  id: string;
+export type CartOrder = {
+  id: string; 
+  vinylId: string;
   name: string;
-  price: number;
-  image?: string;
-  qty: number;
+  price: number; 
+  qt: number; 
 };
+
+export type CartUser = {
+  userId: string;
+  cart: CartOrder[];
+  vinyls: string [];
+}
 
 export type User = {
   id: string;
@@ -26,3 +32,26 @@ export type User = {
   emailVerified: boolean;
   createdAt: string;
 }
+
+export type ApiError = {
+  message: string;
+  statusCode?: number;
+};
+
+export type Order = {
+    id: string
+    userId: string;
+    vinylIds: string[];
+};
+
+export type CheckoutOrder = {
+  paymentId: string;
+  payload: Order;
+};
+
+export type EmailCorpus = {
+  to: string;
+  subject: string;
+  body: string;
+};
+
