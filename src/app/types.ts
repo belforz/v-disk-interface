@@ -6,6 +6,7 @@ export type Vinyl =  {
   stock: number;
   coverPath: string;
   gallery: string[];
+  isPrincipal: boolean;
   createdAt: string;
   updatedAt: string;
 };

@@ -7,18 +7,28 @@ export function useAuth() {
   const [error, setError] = useState<ApiError | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
+  // Remove sensitive fields that may be returned by the API (e.g. password)
+  const sanitizeUser = (u: any): User | null => {
+    if (!u) return null;
+    // create a shallow copy without `password` or other sensitive fields
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, pwd, ...rest } = u as any;
+    return rest as User;
+  };
+
   const handleFetchError = (err: unknown): ApiError => {
     if (err instanceof Error) {
       return { message: err.message, statusCode: 500 };
     }
     return { message: "An unknown error occurred", statusCode: 500 };
   };
+  const AUTH_BASE = (import.meta.env.VITE_API_LOGIN as string) || `${import.meta.env.VITE_API_URL}/api/auth`;
 
   const auth = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/`, {
+  const response = await fetch(`${AUTH_BASE}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,9 +42,22 @@ export function useAuth() {
       }
 
       const data = await response.json();
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem("token", data.token);
+
+      // support both formats: { token } or { data: { token } }
+      const tokenValue: string | null = data?.token ?? data?.data?.token ?? null;
+      const userValue: any = data?.user ?? data?.data?.user ?? null;
+
+      if (!tokenValue) {
+        throw new Error("Token not found in login response");
+      }
+
+      setToken(tokenValue);
+      setUser(sanitizeUser(userValue));
+      localStorage.setItem("token", tokenValue);
+
+      // return useful result for callers that want to await auth
+      console.log('Auth hook result:', { token: tokenValue, user: userValue });
+      return { token: tokenValue, user: userValue };
     } catch (err) {
       setError(handleFetchError(err));
     } finally {
@@ -47,7 +70,7 @@ export function useAuth() {
     setError(null);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/verify-email`,
+        `${AUTH_BASE}/verify-email`,
         {
           method: "POST",
           headers: {
@@ -62,8 +85,9 @@ export function useAuth() {
         throw new Error(errorData.message || "Failed to verify email");
       }
 
-      const data = await response.json();
-      setUser(data.user);
+  const data = await response.json();
+  const userValue: any = data?.user ?? data?.data?.user ?? null;
+  setUser(sanitizeUser(userValue));
     } catch (err) {
       setError(handleFetchError(err));
     } finally {
@@ -97,7 +121,7 @@ export function useAuth() {
     setError(null);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
+        `${AUTH_BASE}/refresh-token`,
         {
           method: "POST",
           headers: {
@@ -112,9 +136,11 @@ export function useAuth() {
         throw new Error(errorData.message || "Failed to refresh token");
       }
 
-      const data = await response.json();
-      setToken(data.token);
-      localStorage.setItem("token", data.token);
+  const data = await response.json();
+  const tokenValue: string | null = data?.token ?? data?.data?.token ?? null;
+  if (!tokenValue) throw new Error("Token not found in refresh response");
+  setToken(tokenValue);
+  localStorage.setItem("token", tokenValue);
     } catch (err) {
       setError(handleFetchError(err));
     } finally {
@@ -127,7 +153,7 @@ export function useAuth() {
     setError(null);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/change-password`,
+        `${AUTH_BASE}/change-password`,
         {
           method: "POST",
           headers: {
@@ -143,8 +169,9 @@ export function useAuth() {
         throw new Error(errorData.message || "Failed to change password");
       }
 
-      const data = await response.json();
-      setUser(data.user);
+  const data = await response.json();
+  const userValue: any = data?.user ?? data?.data?.user ?? null;
+  setUser(sanitizeUser(userValue));
     } catch (err) {
       setError(handleFetchError(err));
     } finally {

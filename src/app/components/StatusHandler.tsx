@@ -1,9 +1,10 @@
 import { ReactNode } from "react";
 import { Loader2, AlertCircle } from "lucide-react"; 
+import { ApiError } from "@app/types";
 
 type Props = {
   loading?: boolean;
-  error?: string | null;
+  error?: string | ApiError | null;
   children?: ReactNode;
   onRetry?: () => void;
 };
@@ -25,7 +26,13 @@ export default function StatusHandler({ loading, error, children, onRetry }: Pro
       <div className="w-full text-center py-12">
         <div className="flex items-center justify-center gap-2 mb-3 text-red-400">
           <AlertCircle className="h-5 w-5" />
-          <p className="text-sm">{error}</p>
+          <p className="text-sm">
+            {typeof error === "string"
+              ? error
+              : error && typeof error === "object" && "message" in error
+              ? (error as ApiError).message
+              : "An unknown error occurred."}
+          </p>
         </div>
         <button
           type="button"

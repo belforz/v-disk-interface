@@ -123,6 +123,8 @@ export function useUser() {
     createUser,
     updateUser,
     deleteUser,
-    resetUserState
+    resetUserState,
+    resendEmailUser,
+    getUserToken
   };
 }

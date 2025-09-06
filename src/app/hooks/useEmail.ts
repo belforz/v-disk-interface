@@ -52,6 +52,8 @@ export function useEmail() {
     emails,
     loading,
     error,
-    resetEmailState
+    resetEmailState,
+    sendEmail,
+    emailChangePassword
   };
 }

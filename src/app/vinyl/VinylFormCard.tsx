@@ -29,6 +29,7 @@ function emptyVinyl(): Vinyl {
     stock: 0,
     coverPath: "",
     gallery: [],
+    isPrincipal: false,
     createdAt: new Date().toISOString() as any,
     updatedAt: new Date().toISOString() as any,
   };
@@ -233,6 +234,20 @@ export default function VinylFormCard({
               placeholder="Vinyl Quantity"
               min={0}
             />
+          </label>
+
+          <label className="block">
+            <span className="text-xs text-white/60">Home Show</span>
+            <input
+            className="mt-1 w-full bg-black accent-white border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"
+            type="checkbox" 
+            checked={formData.isPrincipal ?? false}
+            onChange={(e) =>
+              setFormData((p) => ({ ...p, isPrincipal: e.target.checked }))
+            }
+            disabled={isViewMode}
+          />
+
           </label>
 
           <label className="block">

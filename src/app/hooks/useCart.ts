@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { CartOrder, CartUser, ApiError} from "@app/types";
 import axios from "axios";
 
+
 const CART_BASE_URL = import.meta.env.VITE_API_CARTS;
 
 export function useCart() {
@@ -131,5 +132,22 @@ export function useCart() {
     } catch (error) {
       throw new Error("Failed to delete cart");
     }
+  }
+  return {
+    cart,
+    cartUser,
+    loading,
+    error,
+    getUserCart,
+    createUserCart,
+    deleteUserCart,
+    updateUserCart,
+    addVinylToUserCart,
+    removeVinylFromUserCart,
+    getCart,
+    addItemToCart,
+    removeItemFromCart,
+    updateCart,
+    deleteCart
   }
 }
