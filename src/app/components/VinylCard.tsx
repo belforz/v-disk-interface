@@ -31,7 +31,6 @@ export function VinylCard({ vinyl }: Props) {
         <div className="text-white/60 text-xs truncate">
           Artist: {vinyl.artist}
         </div>
-
         {role == "admin" && (
           <>
             <div className="text-white/60 text-xs truncate">
