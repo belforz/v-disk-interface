@@ -1,13 +1,14 @@
 {
   "rewrites": [
     { "source": "/verify-email", "destination": "/index.html" },
-    { "source": "/verify-email/:path*", "destination": "/index.html" },
     { "source": "/reset-password", "destination": "/index.html" },
-    { "source": "/reset-password/:path*", "destination": "/index.html" },
     { "source": "/dashboard", "destination": "/index.html" },
-    { "source": "/dashboard/:path*", "destination": "/index.html" },
     { "source": "/user", "destination": "/index.html" },
     { "source": "/user/:path*", "destination": "/index.html" },
-    { "source": "^/(?:(?!api/|_next/|static/|images/|favicon.ico|robots.txt|sitemap.xml)[^./].*)$", "destination": "/index.html" }
+    { "source": "/verify-email/:path*", "destination": "/index.html" },
+    { "source": "/reset-password/:path*", "destination": "/index.html" },
+    { "source": "/dashboard/:path*", "destination": "/index.html" },
+    { "source": "/user/:path*", "destination": "/index.html" },
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }
