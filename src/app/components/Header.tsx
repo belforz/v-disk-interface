@@ -26,7 +26,17 @@ export function Header() {
       notify.error("Failed to log out");
     }
   }
-  
+
+  const redirectToPanel = () => {
+    const roles = user?.roles;
+    const isAdmin = Array.isArray(roles) ? roles.includes('ADMIN') : roles === 'ADMIN';
+    if (isAdmin) {
+      navigate("/dashboard");
+    } else {
+      navigate("/user");
+    }
+  };
+
   return (
     <header className="sticky top-0 z-20 bg-black/80 backdrop-blur border-b border-white/10">
       <nav className="mx-auto max-w-7xl px-4 h-10 flex items-center justify-between">
@@ -34,18 +44,14 @@ export function Header() {
           <NavLink to="/" className="nav-link">
             Home
           </NavLink>
-          {/* If there are orders for the current user, link History -> /orders, otherwise /history */}
-          <NavLink to={orders && orders.length > 0 ? "/orders" : "/history"} className="nav-link">
+          <NavLink to="/history" className="nav-link">
             History
-            {orders && orders.length > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-black bg-white rounded-full">
-                {orders.length}
-              </span>
-            )}
           </NavLink>
           <NavLink to="/artists" className="nav-link">
             Artists
           </NavLink>
+
+          <button onClick={redirectToPanel} className="nav-link">Dashboard</button>
         </div>
 
         <Link to="/" className="text-white">

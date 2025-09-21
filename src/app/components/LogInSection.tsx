@@ -30,9 +30,9 @@ export function LogInSection() {
         // Guest cart merging removed; no action required after login
 
         if (Array.isArray(result.user.roles) && result.user.roles.includes("ADMIN")) {
-          navigate("/login/admin");
+          navigate("/dashboard");
         } else {
-          navigate("/login/user");
+          navigate("/user");
         }
       } else {
         // no user returned — show generic error

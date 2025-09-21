@@ -11,6 +11,7 @@ import {
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import { uploadFile } from "@app/lib/fileUpload";
+import { useVinyl } from "@app/hooks/useVinyl";
 import { notify } from "@app/lib/toast";
 
 type Mode = "create" | "edit" | "view";
@@ -60,8 +61,9 @@ export default function VinylFormCard({
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const preview = previewUrl ?? formData.coverPath;
+  const { updateVinyl } = useVinyl();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isViewMode) return;
 
@@ -79,15 +81,30 @@ export default function VinylFormCard({
       return p;
     };
 
+    const normalizedCover = normalize(formData.coverPath);
     const normalized: Vinyl = {
       ...formData,
-      coverPath: normalize(formData.coverPath),
+      coverPath: normalizedCover,
+      // ensure boolean value for Home Show flag
+      isPrincipal: !!formData.isPrincipal,
       gallery: (formData.gallery || []).map((g) => normalize(g)),
       createdAt: formData.createdAt ?? (new Date().toISOString() as any),
       updatedAt: new Date().toISOString() as any,
     };
 
-    onSubmit?.(normalized);
+    // If coverPath is still a blob URL, the user hasn't uploaded — prevent sending blob to server
+    if (normalizedCover && normalizedCover.startsWith('blob:')) {
+      notify.error('Please upload the image before saving.');
+      return;
+    }
+
+    try {
+      // Delegate persistence to parent so it can handle notifications and UI state
+      await onSubmit?.(normalized);
+    } catch (err) {
+      console.error('Failed to persist vinyl via parent handler:', err);
+      notify.error('Failed to save vinyl');
+    }
   }
 
   function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
@@ -116,12 +133,22 @@ export default function VinylFormCard({
       // Show loading state
       notify.info("Uploading image...");
       
-      // Upload file to server
+      // Upload file to server (Cloudinary or fallback)
       const path = await uploadFile(file);
-      
+
       // Update form with new path
       setFormData((p) => ({ ...p, coverPath: path }));
-      
+
+      // If in edit mode, persist the coverPath to backend immediately
+      if (!isCreateMode && data?.id) {
+        try {
+          // send a minimal payload; backend PATCH should accept partial updates
+          await updateVinyl(data.id, { coverPath: path } as any);
+        } catch (err) {
+          console.warn('Failed to persist coverPath after upload', err);
+        }
+      }
+
       notify.success("Image uploaded successfully");
     } catch (error) {
       console.error("Upload error:", error);

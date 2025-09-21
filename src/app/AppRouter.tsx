@@ -6,6 +6,7 @@ import { Header } from "@app/components/Header";
 import { Footer } from "@app/components/Footer";
 import LoginPage from "./login/LoginPage";
 import RolePage from "./login/role/rolePage";
+import AdminPanel from "./login/role/AdminPanel";
 import SignUp from "./login/SingUp";
 import VerifyEmailPage from "./email/VerifyEmailPage";
 import NotFoundPage from "./NotFound";
@@ -27,6 +28,8 @@ export function AppRouter() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/orders" element={<UserPanel />} />
+            <Route path="/dashboard" element={<AdminPanel />} />
+            <Route path="/user" element={<UserPanel />} />
             <Route path="/login/:role" element={<RolePage />} />
             <Route path="/email-verification" element={<VerifyEmailPage />} />
             <Route path="/verify-email" element={<TokenActionCard mode="verify" />} />

@@ -1,4 +1,5 @@
 import { useCartFacade } from "@app/hooks/useCartFacade";
+import { buildSrc } from "@app/lib/image";
 import { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -29,18 +30,6 @@ export default function CartPage() {
 
   console.log("cartui", safeItems);
 
-  const UPLOAD_BASE = import.meta.env.VITE_API_UPLOAD || '';
-
-  function buildSrc(path?: string | null) {
-    if (!path) return '/images/placeholder.png';
-    if (path.startsWith('blob:')) return path;
-    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    if (path.startsWith('/')) {
-      if (UPLOAD_BASE) return `${UPLOAD_BASE.replace(/\/$/, '')}${path}`;
-      return path;
-    }
-    return '/images/placeholder.png';
-  }
 
   const { createOrder, loading: creating } = useOrder();
   const { user } = useAuth();

@@ -48,7 +48,9 @@ export default function AdminPanel() {
       await createUser(payload as User).catch(() => {});
       notify.success("User created successfully!")
     } else {
-      await createVinyl(payload as Vinyl).catch(() => {});
+      // ensure isPrincipal is boolean
+      const vinyl = { ...(payload as Vinyl), isPrincipal: !!(payload as Vinyl).isPrincipal } as Vinyl;
+      await createVinyl(vinyl).catch(() => {});
       notify.success("Vinyl created sucessfully!")
     }
     setPanel({ kind: "none" });
@@ -60,7 +62,8 @@ export default function AdminPanel() {
       await updateUser(payload.id, payload as User).catch(() => {});
       notify.success("User edited sucessfully !")
     } else {
-      await updateVinyl(payload.id, payload as Vinyl).catch(() => {});
+      const vinyl = { ...(payload as Vinyl), isPrincipal: !!(payload as Vinyl).isPrincipal } as Vinyl;
+      await updateVinyl(payload.id, vinyl).catch(() => {});
       notify.success("Vinyl edited successfully!");
     }
     setPanel({ kind: "none" });
@@ -211,87 +214,111 @@ export default function AdminPanel() {
   console.log("Vinyls para renderizar:", vinyls);
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-black">
+      <div className="p-6 rounded-md overflow-hidden max-w-6xl mx-auto mb-6">
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-xl mx-auto mb-6">
+              <img
+                src="/images/v-disk-admin.png"
+                className="w-full max-w-[300px] md:max-w-[400px] aspect-square object-cover mx-auto"
+                loading="lazy"
+                alt="v-disk admin"
+              />
+              
+              </div>
+              <h1 className="font-display text-2xl md:text-3xl uppercase tracking-wider text-center">
+            Admin of V-disk(ohhhh yeah!)
+          </h1>
+              </div>
+              <p className="mt-3 mb-4 text-white/70 text-center">
+            Manage products below
+          </p>
+              </div>
+
       {/* Regular panel for products and users */}
       {panel.kind !== "none" && (
-        <div className="mt-8">
-          {panel.kind === "create" && (tab === "users" ? (
-            <UserFormCard mode="create" onSubmit={handleCreateSubmit} onCancel={() => setPanel({ kind: "none" })} />
-          ) : (
-            <VinylFormCard mode="create" onSubmit={handleCreateSubmit} onCancel={() => setPanel({ kind: "none" })} />
-          ))}
+        <div className="p-4">
+          <div className="border border-white/10 bg-black/60 p-6 rounded-md overflow-hidden max-w-6xl mx-auto">
+            {panel.kind === "create" && (tab === "users" ? (
+              <UserFormCard mode="create" onSubmit={handleCreateSubmit} onCancel={() => setPanel({ kind: "none" })} />
+            ) : (
+              <VinylFormCard mode="create" onSubmit={handleCreateSubmit} onCancel={() => setPanel({ kind: "none" })} />
+            ))}
 
-          {panel.kind === "edit" && (tab === "users" ? (
-            <UserFormCard
-              mode="edit"
-              data={panel.data as User}
-              onSubmit={handleEditSubmit}
-              onDelete={(id) => handleDelete(id)}
-              onCancel={() => setPanel({ kind: "none" })}
-            />
-          ) : (
-            <VinylFormCard
-              mode="edit"
-              data={panel.data as Vinyl}
-              onSubmit={handleEditSubmit}
-              onDelete={(id) => handleDelete(id)}
-              onCancel={() => setPanel({ kind: "none" })}
-            />
-          ))}
+            {panel.kind === "edit" && (tab === "users" ? (
+              <UserFormCard
+                mode="edit"
+                data={panel.data as User}
+                onSubmit={handleEditSubmit}
+                onDelete={(id) => handleDelete(id)}
+                onCancel={() => setPanel({ kind: "none" })}
+              />
+            ) : (
+              <VinylFormCard
+                mode="edit"
+                data={panel.data as Vinyl}
+                onSubmit={handleEditSubmit}
+                onDelete={(id) => handleDelete(id)}
+                onCancel={() => setPanel({ kind: "none" })}
+              />
+            ))}
 
-          {panel.kind === "view" && (tab === "users" ? (
-            <UserFormCard
-              mode="view"
-              data={panel.data as User}
-              onDelete={(id) => handleDelete(id)}
-              onCancel={() => setPanel({ kind: "none" })}
-            />
-          ) : (
-            <VinylFormCard
-              mode="view"
-              data={panel.data as Vinyl}
-              onDelete={(id) => handleDelete(id)}
-              onCancel={() => setPanel({ kind: "none" })}
-            />
-          ))}
+            {panel.kind === "view" && (tab === "users" ? (
+              <UserFormCard
+                mode="view"
+                data={panel.data as User}
+                onDelete={(id) => handleDelete(id)}
+                onCancel={() => setPanel({ kind: "none" })}
+              />
+            ) : (
+              <VinylFormCard
+                mode="view"
+                data={panel.data as Vinyl}
+                onDelete={(id) => handleDelete(id)}
+                onCancel={() => setPanel({ kind: "none" })}
+              />
+            ))}
+          </div>
         </div>
       )}
 
       {/* Separate panel for orders */}
       {orderPanel.kind !== "none" && (
-        <div className="mt-8">
-          {orderPanel.kind === "create" && (
-            <OrderForm 
-              mode="create" 
-              onSubmit={handleOrderSubmit} 
-              onCancel={() => setOrderPanel({ kind: "none" })} 
-            />
-          )}
+        <div className="p-4">
+          <div className="border border-white/10 bg-black/60 p-6 rounded-md overflow-hidden max-w-6xl mx-auto">
+            {orderPanel.kind === "create" && (
+              <OrderForm 
+                mode="create" 
+                onSubmit={handleOrderSubmit} 
+                onCancel={() => setOrderPanel({ kind: "none" })} 
+              />
+            )}
 
-          {orderPanel.kind === "edit" && (
-            <OrderForm
-              mode="edit"
-              data={orderPanel.data}
-              onSubmit={handleOrderSubmit}
-              onDelete={(id) => handleDelete(id)}
-              onCancel={() => setOrderPanel({ kind: "none" })}
-            />
-          )}
+            {orderPanel.kind === "edit" && (
+              <OrderForm
+                mode="edit"
+                data={orderPanel.data}
+                onSubmit={handleOrderSubmit}
+                onDelete={(id) => handleDelete(id)}
+                onCancel={() => setOrderPanel({ kind: "none" })}
+              />
+            )}
 
-          {orderPanel.kind === "view" && (
-            <OrderForm
-              mode="view"
-              data={orderPanel.data}
-              onSubmit={handleOrderSubmit} // Not used in view mode
-              onDelete={(id) => handleDelete(id)}
-              onCancel={() => setOrderPanel({ kind: "none" })}
-            />
-          )}
+            {orderPanel.kind === "view" && (
+              <OrderForm
+                mode="view"
+                data={orderPanel.data}
+                onSubmit={handleOrderSubmit} // Not used in view mode
+                onDelete={(id) => handleDelete(id)}
+                onCancel={() => setOrderPanel({ kind: "none" })}
+              />
+            )}
+          </div>
         </div>
       )}
 
-      <section className="mt-8">
-        <div className="flex justify-between mb-4">
+      <section className="p-8 border border-white/10 bg-black/60 rounded-md overflow-hidden max-w-6xl mx-auto">
+        <div className="flex justify-between mb-6">
           <div className="flex gap-2">
             <button
               onClick={() => {
@@ -344,7 +371,7 @@ export default function AdminPanel() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {tab === 'products' ? (
             loadingVinyls ? (
-              <div className="col-span-full text-center text-white/60">Loading...</div>
+              <div className="col-span-full text-center text-white/60 p-8">Loading...</div>
             ) : vinyls && vinyls.length > 0 ? (
               vinyls.map((vinyl) => (
                 <div key={vinyl.id} className="relative group">
@@ -375,12 +402,12 @@ export default function AdminPanel() {
                 </div>
               ))
             ) : (
-              <div className="col-span-full text-center text-white/60">No products found.</div>
+              <div className="col-span-full text-center text-white/60 p-8 border border-white/5 rounded">No products found.</div>
             )
           ) : tab === 'users' ? (
             // Users tab
             loadingUsers ? (
-              <div className="col-span-full text-center text-white/60">Loading...</div>
+              <div className="col-span-full text-center text-white/60 p-8">Loading...</div>
             ) : users && users.length > 0 ? (
               users.map((u) => (
                 <div key={u.id} className="relative group">
@@ -410,12 +437,12 @@ export default function AdminPanel() {
                 </div>
               ))
             ) : (
-              <div className="col-span-full text-center text-white/60">No users found.</div>
+              <div className="col-span-full text-center text-white/60 p-8 border border-white/5 rounded">No users found.</div>
             )
           ) : (
             // Orders tab
             loadingOrders ? (
-              <div className="col-span-full text-center text-white/60">Loading...</div>
+              <div className="col-span-full text-center text-white/60 p-8">Loading...</div>
             ) : orders && orders.length > 0 ? (
               orders.map((o) => (
                 <div key={o.id} className="relative group">
@@ -445,7 +472,7 @@ export default function AdminPanel() {
                 </div>
               ))
             ) : (
-              <div className="col-span-full text-center text-white/60">No orders found.</div>
+              <div className="col-span-full text-center text-white/60 p-8 border border-white/5 rounded">No orders found.</div>
             )
           )}
         </div>

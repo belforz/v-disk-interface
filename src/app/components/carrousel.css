@@ -1,0 +1,72 @@
+/* Smooth crossfade animation for the featured carousel */
+@keyframes smoothFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+    filter: blur(6px);
+  }
+  40% {
+    opacity: 0.6;
+    transform: scale(0.995);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes smoothFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  60% {
+    opacity: 0.6;
+    transform: scale(0.995);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.98);
+    filter: blur(6px);
+  }
+}
+
+/* Base slide styling with proper z-index stacking */
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  will-change: opacity, transform, filter;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  contain: layout;
+  visibility: hidden; /* Hide by default */
+  z-index: 10; /* Base z-index for idle slides */
+  opacity: 0;
+}
+
+/* Active slide (currently visible) */
+.carousel-slide.entering {
+  visibility: visible;
+  z-index: 30; /* Highest z-index for active slide */
+  animation: smoothFadeIn 1500ms cubic-bezier(0.22, 1, 0.36, 1) 100ms forwards;
+}
+
+/* Exiting slide (being replaced) */
+.carousel-slide.exiting {
+  visibility: visible;
+  z-index: 5; /* Lowest z-index for exiting slide */
+  animation: smoothFadeOut 1500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .carousel-slide.entering,
+  .carousel-slide.exiting {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -8,33 +8,39 @@ export default function RolePage() {
   const { user } = useAuth();
 
   return (
-    <section className="mx-auto max-w-5xl px-4 py-10">
-      <div className="flex flex-col items-center">
-        {role === "admin" ? (
-          <img
-            src="/images/v-disk-admin.png"
-            className="w-full max-w-[200px] sm:max-w-[260px] md:max-w-[320px] lg:max-w-[400px] aspect-square object-cover"
-            loading="lazy"
-            alt="v-disk admin"
-          />
-        ) : (
-          <img
-            src="/images/v-disk-user.png"
-            className="w-full max-w-[200px] sm:max-w-[260px] md:max-w-[320px] lg:max-w-[400px] aspect-square object-cover"
-            loading="lazy"
-            alt="v-disk user"
-          />
-        )}
+    <section className="mx-auto max-w-7xl px-4 py-8">
+      {/* Top section with image and heading */}
+      <div className="border border-white/10 bg-black/60 p-6 rounded-md overflow-hidden max-w-6xl mx-auto mb-6">
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-xl mx-auto mb-6">
+            {role === "admin" ? (
+              <img
+                src="/images/v-disk-admin.png"
+                className="w-full max-w-[300px] md:max-w-[400px] aspect-square object-cover mx-auto"
+                loading="lazy"
+                alt="v-disk admin"
+              />
+            ) : (
+              <img
+                src="/images/v-disk-user.png"
+                className="w-full max-w-[300px] md:max-w-[400px] aspect-square object-cover mx-auto"
+                loading="lazy"
+                alt="v-disk user"
+              />
+            )}
+          </div>
 
-        <h1 className="font-display text-2xl md:text-3xl uppercase tracking-wider text-center mt-6">
-          {role === "admin" ? "Painel do Admin" : `Hi, ${user?.name ?? "User"}!`}
-        </h1>
-        <p className="mt-3 text-white/70 text-center">
-          {role === "admin" ? "Manage products below" : "See your orders below"}
-        </p>
+          <h1 className="font-display text-2xl md:text-3xl uppercase tracking-wider text-center">
+            {role === "admin" ? "Painel do Admin" : `Hi, ${user?.name ?? "User"}!`}
+          </h1>
+          <p className="mt-3 mb-4 text-white/70 text-center">
+            {role === "admin" ? "Manage products below" : "See your orders below"}
+          </p>
+        </div>
       </div>
 
-      <div className="mt-8">
+      {/* Panels container */}
+      <div>
         {role === "admin" ? <AdminPanel /> : <UserPanel />}
       </div>
     </section>
