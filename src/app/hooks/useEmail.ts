@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { EmailCorpus, ApiError} from "@app/types";
-import axios from "axios";
 import { notify } from "@app/lib/toast";
+import { apiEmails } from "@app/lib/api";
 
 const EMAIL_BASE_URL = import.meta.env.VITE_API_EMAIL;
 
@@ -10,11 +10,11 @@ export function useEmail() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
-  async function sendEmail(email: EmailCorpus) {
+  const sendEmail = useCallback(async (email: EmailCorpus) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${EMAIL_BASE_URL}/send`, email);
+      const response = await apiEmails.post(`${EMAIL_BASE_URL}/send`, email);
       setEmails((prev) => [...prev, response.data]);
       if (response.status === 200) {
         notify.success("Email sent successfully");
@@ -24,13 +24,13 @@ export function useEmail() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function emailChangePassword(to:string) {
+  const emailChangePassword = useCallback(async (to:string) => {
     setLoading(true);
     setError(null);
     try {
-        const response = await axios.post(`${EMAIL_BASE_URL}/change-password`, { to });
+        const response = await apiEmails.post(`${EMAIL_BASE_URL}/change-password`, { to });
         if (response.status === 200) {
            notify.success("Email sent successfully")
         }
@@ -40,20 +40,20 @@ export function useEmail() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function resetEmailState() {
+  const resetEmailState = useCallback(async () => {
     setEmails([]);
     setLoading(false);
     setError(null);
-  }
+  }, []);
 
-  return {
+  return useMemo(() => ({
     emails,
     loading,
     error,
     resetEmailState,
     sendEmail,
     emailChangePassword
-  };
+  }), [emails, loading, error, resetEmailState, sendEmail, emailChangePassword]);
 }

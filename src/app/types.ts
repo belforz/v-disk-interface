@@ -11,12 +11,75 @@ export type Vinyl =  {
   updatedAt: string;
 };
 
-export type CartOrder = {
+export type CartOrder =  {
   id: string; 
-  vinylId: string;
+  vinyls: [Vinyl[]]
   name: string;
   price: number; 
   qt: number; 
+};
+
+export type OrderItem = {
+  vinylId: string;            // id do produto original
+  quantity: number;          // quantidade desse item no pedido
+  title?: string | null;     // snapshot do título no momento da compra
+  artist?: string | null;    // snapshot do artista
+  price?: string | null;     // snapshot do preço (string para evitar float impreciso)
+  coverPath?: string | null; // snapshot do path da imagem
+}
+
+export type Order = {
+  id: string;
+  userId: string;
+  // Newer backend uses vinylIds array for simple reference and qt for total quantity
+  vinylIds?: string[] | null;
+  items?: OrderItem[] | null; // lista de items com qty por item (optional snapshot)
+  qt?: number | null;         // soma das quantidades (opcional; backend pode preencher)
+  paymentId?: string | null;
+  isPaymentConfirmed?: boolean | null;
+  orderStatus?: string | null; // ex: PENDING, CONFIRMED, FAILED, CANCELED
+  createdAt?: string | null;   // ISO-8601
+  updatedAt?: string | null;   // ISO-8601
+}
+
+export type CreateOrderRequest = {
+  userId: string;
+  items: Array<{
+    vinylId: string;
+    quantity?: number;
+  }>;
+  paymentId?: string;
+  orderStatus?: string;
+  
+  qt?: number;
+  isPaymentConfirmed?: boolean;
+}
+
+
+export interface UpdateOrderRequest {
+  userId?: string;
+  items?: Array<{
+    vinylId: string;
+    quantity?: number;
+   
+  }>;
+  paymentId?: string;
+  orderStatus?: string;
+  qt?: number;
+  isPaymentConfirmed?: boolean;
+}
+
+export interface OrderResponse {
+  status: string; 
+  data: Order;
+}
+
+export type CartItem = {
+  id: string;
+  name: string;
+  price: number;
+  image?: string;
+  qty: number;
 };
 
 export type CartUser = {
@@ -39,11 +102,6 @@ export type ApiError = {
   statusCode?: number;
 };
 
-export type Order = {
-    id: string
-    userId: string;
-    vinylIds: string[];
-};
 
 export type CheckoutOrder = {
   paymentId: string;

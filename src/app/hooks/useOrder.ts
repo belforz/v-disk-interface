@@ -1,111 +1,172 @@
-import { useState } from "react";
-import type { Order, ApiError} from "@app/types";
-import axios from "axios";
-
-const ORDERS_BASE_URL = import.meta.env.VITE_API_ORDERS;
+import { useState, useCallback, useMemo } from "react";
+import type { Order, ApiError, CreateOrderRequest, UpdateOrderRequest } from "@app/types";
+import { apiOrders } from "@app/lib/api";
 
 export function useOrder() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
-  async function getAllOrders() {
+  const normalizeResponse = <T,>(res: any): T => {
+    return res?.data?.data ?? res?.data ?? res;
+  };
+
+  const getAllOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${ORDERS_BASE_URL}/`);
-      setOrders(response.data);
+      const response = await apiOrders.get(``);
+      const data = normalizeResponse<Order[]>(response);
+      setOrders(data || []);
+      return data;
     } catch (error: any) {
-      setError({message: error.message , statusCode: error.response?.status});
+      setError({ message: error.message, statusCode: error.response?.status });
+      throw error;
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function getOrderById(id: string) {
+  const getOrderById = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${ORDERS_BASE_URL}/${id}`);
-      return response.data;
+      const response = await apiOrders.get(`/${id}`);
+      const data = normalizeResponse<Order>(response);
+      // upsert into orders state so components can reuse cached data
+      setOrders((prev) => {
+        if (!data) return prev;
+        const exists = prev.find((o) => o.id === data.id);
+        if (exists) return prev.map((o) => (o.id === data.id ? data : o));
+        return [...prev, data];
+      });
+      return data;
     } catch (error: any) {
-      setError({message: error.message , statusCode: error.response?.status});
+      setError({ message: error.message, statusCode: error.response?.status });
+      throw error;
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-
-async function createOrder(payload: Order) {
+  // Create an order. Payload shape: { userId: string, vinylIds: string[], qt?: number, paymentId?: string, isPaymentConfirmed?: boolean, orderStatus?: string }
+  const createOrder = useCallback(async (payload: CreateOrderRequest) => {
     setLoading(true);
     setError(null);
     try {
-        const response = await axios.post(`${ORDERS_BASE_URL}/`, payload);
-        setOrders((prev) => [...prev, response.data]);
+      const response = await apiOrders.post(`/`, payload);
+      const created = normalizeResponse<Order>(response);
+      if (created) setOrders((prev) => [...prev, created]);
+      return created as Order;
     } catch (error: any) {
-        setError({ message: error.message, statusCode: error.response?.status });
-    } finally {
-        setLoading(false);
-    }
-}
-
-interface UpdateOrderPayload extends Order {
-    qty: number[];
-    paymentId: string;
-    isPaymentConfirmed: boolean;
-    orderStatus: "pending" | "completed" | "cancelled";
-}
-
-  async function updateOrder(id: string, payload: UpdateOrderPayload): Promise<void> {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.patch(`${ORDERS_BASE_URL}/${id}`, payload);
-      setOrders((prev) =>
-        prev.map((order) => (order.id === id ? response.data : order))
-      );
-    } catch (error: any) {
-      setError({message: error.message , statusCode: error.response?.status});
+      setError({ message: error.message, statusCode: error.response?.status });
+      throw error;
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function deleteOrder(id: string) {
+  const updateOrder = useCallback(async (id: string, payload: UpdateOrderRequest): Promise<Order> => {
     setLoading(true);
     setError(null);
     try {
-      await axios.delete(`${ORDERS_BASE_URL}/${id}`);
-      setOrders((prev) => prev.filter((order) => order.id !== id));
+      const response = await apiOrders.patch(`/${id}`, payload);
+      const updated = normalizeResponse<Order>(response);
+      setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
+      return updated as Order;
     } catch (error: any) {
-      setError({message: error.message , statusCode: error.response?.status});
+      setError({ message: error.message, statusCode: error.response?.status });
+      throw error;
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function changeOrderPaymentStatus(id: string, status: "pending" | "completed" | "cancelled") {
+  const deleteOrder = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.patch(`${ORDERS_BASE_URL}/${id}/payment-status`, { status });
-      setOrders((prev) =>
-        prev.map((order) => (order.id === id ? response.data : order))
-      );
+      await apiOrders.delete(`/${id}`);
+      setOrders((prev) => prev.filter((o) => o.id !== id));
     } catch (error: any) {
-      setError({message: error.message , statusCode: error.response?.status});
+      setError({ message: error.message, statusCode: error.response?.status });
+      throw error;
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function resetOrderState() {
+  const getByCustomer = useCallback(async (userId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apiOrders.get(`/by-customer/${userId}`);
+      const data = normalizeResponse<Order[]>(response);
+      return data;
+    } catch (error: any) {
+      setError({ message: error.message, statusCode: error.response?.status });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Payment actions: map to server endpoints
+  // const approvePayment = useCallback(async (paymentId: string) => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const response = await apiOrders.post(`/payment/${paymentId}/approve`);
+  //     const updated = normalizeResponse<Order>(response);
+  //     setOrders((prev) => prev.map((o) => (o.paymentId === paymentId ? updated : o)));
+  //     return updated;
+  //   } catch (error: any) {
+  //     setError({ message: error.message, statusCode: error.response?.status });
+  //     throw error;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
+
+  // const failPayment = useCallback(async (paymentId: string) => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const response = await apiOrders.post(`/payment/${paymentId}/fail`);
+  //     const updated = normalizeResponse<Order>(response);
+  //     setOrders((prev) => prev.map((o) => (o.paymentId === paymentId ? updated : o)));
+  //     return updated;
+  //   } catch (error: any) {
+  //     setError({ message: error.message, statusCode: error.response?.status });
+  //     throw error;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
+
+  // const cancelPayment = useCallback(async (paymentId: string) => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const response = await apiOrders.post(`/payment/${paymentId}/cancel`);
+  //     const updated = normalizeResponse<Order>(response);
+  //     setOrders((prev) => prev.map((o) => (o.paymentId === paymentId ? updated : o)));
+  //     return updated;
+  //   } catch (error: any) {
+  //     setError({ message: error.message, statusCode: error.response?.status });
+  //     throw error;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
+
+  const resetOrderState = useCallback(async () => {
     setOrders([]);
     setLoading(false);
     setError(null);
-  }
+  }, []);
 
-  return {
+  return useMemo(() => ({
     orders,
     loading,
     error,
@@ -114,6 +175,10 @@ interface UpdateOrderPayload extends Order {
     createOrder,
     updateOrder,
     deleteOrder,
+    getByCustomer,
+    // approvePayment,
+    // failPayment,
+    // cancelPayment,
     resetOrderState
-  };
+  }), [orders, loading, error, getAllOrders, getOrderById, createOrder, updateOrder, deleteOrder, getByCustomer, resetOrderState]);
 }

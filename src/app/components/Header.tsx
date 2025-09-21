@@ -1,14 +1,32 @@
-import { Link, NavLink } from "react-router-dom";
-import { useCart } from "@app/store/cart";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useCartFacade } from "@app/hooks/useCartFacade";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBagShopping,
   faCompactDisc,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "@app/hooks/useAuth";
+import { useOrder } from "@app/hooks";
+import { notify } from "@app/lib/toast";
 
 export function Header() {
-  const count = useCart((s) => s.count());
+  const { items } = useCartFacade();
+  const count = (items || []).reduce((acc, it: any) => acc + (it.qty ?? 0), 0);
+  const { user, logout } = useAuth();
+  const { orders } = useOrder();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    try {
+      await logout();
+      notify.success("Logged out");
+      navigate("/");
+    } catch (err) {
+      notify.error("Failed to log out");
+    }
+  }
+  
   return (
     <header className="sticky top-0 z-20 bg-black/80 backdrop-blur border-b border-white/10">
       <nav className="mx-auto max-w-7xl px-4 h-10 flex items-center justify-between">
@@ -16,12 +34,18 @@ export function Header() {
           <NavLink to="/" className="nav-link">
             Home
           </NavLink>
-          <a className="nav-link" href="#">
-            Disks
-          </a>
-          <a className="nav-link" href="#">
+          {/* If there are orders for the current user, link History -> /orders, otherwise /history */}
+          <NavLink to={orders && orders.length > 0 ? "/orders" : "/history"} className="nav-link">
+            History
+            {orders && orders.length > 0 && (
+              <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-black bg-white rounded-full">
+                {orders.length}
+              </span>
+            )}
+          </NavLink>
+          <NavLink to="/artists" className="nav-link">
             Artists
-          </a>
+          </NavLink>
         </div>
 
         <Link to="/" className="text-white">
@@ -29,14 +53,21 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-6">
-          <a className="nav-link" href="#">
+          <NavLink to="/location" className="nav-link">
             Location
-          </a>
+          </NavLink>
 
-          <Link to="/login" className="relative nav-link hover:">
-            <FontAwesomeIcon icon={faUser} className="mr-2" />
-            Login
-          </Link>
+          {user ? (
+            <button onClick={handleLogout} className="relative nav-link text-sm">
+              <FontAwesomeIcon icon={faUser} className="mr-2" />
+              Logout
+            </button>
+          ) : (
+            <Link to="/login" className="relative nav-link hover:">
+              <FontAwesomeIcon icon={faUser} className="mr-2" />
+              Login
+            </Link>
+          )}
 
           <Link to="/cart" className="relative nav-link">
             <FontAwesomeIcon icon={faBagShopping} className="mr-2" />

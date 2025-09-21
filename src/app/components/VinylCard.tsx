@@ -1,21 +1,42 @@
 import type { Vinyl } from "@app/types";
-import { useCart } from "@app/store/cart";
 import { useParams } from "react-router-dom";
+import { useCartFacade } from "@app/hooks/useCartFacade";
+import { notify } from "@app/lib/toast";
+import { useState } from "react";
 
 type Props = { vinyl: Vinyl };
 
 export function VinylCard({ vinyl }: Props) {
-  const add = useCart((s) => s.add);
   const { role } = useParams();
+  const { add } = useCartFacade();
+  const [adding, setAdding] = useState(false);
 
-  const src = Array.isArray(vinyl.coverPath)
-    ? vinyl.coverPath[0]
-    : vinyl.coverPath || "/images/placeholder.png";
+  
+
+  const rawCover = Array.isArray(vinyl.coverPath) ? vinyl.coverPath[0] : vinyl.coverPath;
+
+  // Build a safe image src:
+  // - blob: URLs and absolute http(s) URLs are used as-is
+  // - paths that start with '/' are treated as relative to the image server (VITE_API_UPLOAD)
+  // - otherwise fall back to placeholder
+  const UPLOAD_BASE = import.meta.env.VITE_API_UPLOAD || '';
+
+  function buildSrc(path?: string | null) {
+    if (!path) return '/images/placeholder.png';
+    if (path.startsWith('blob:')) return path;
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    if (path.startsWith('/')) {
+      // If an upload base is configured, prefix it (ensure no double slashes)
+      if (UPLOAD_BASE) return `${UPLOAD_BASE.replace(/\/$/, '')}${path}`;
+      return path; // assume same origin serves /images
+    }
+    return '/images/placeholder.png';
+  }
 
   return (
     <div className="group ">
       <img
-        src={src}
+        src={buildSrc(rawCover ?? '')}
         alt={vinyl.title}
         className="w-full aspect-[3/4] object-cover object-center"
         loading="lazy"
@@ -50,10 +71,20 @@ export function VinylCard({ vinyl }: Props) {
         {role !== "admin" && (
           <div className="mt-2 ">
             <button
-              onClick={() => add(vinyl, 1)}
-              className="mt-2 w-full border border-white/20 hover:border-white/50 text-xs uppercase tracking-widest py-2"
+              onClick={async () => {
+                try {
+                  setAdding(true);
+                  await add(vinyl.id, 1);
+                } catch (e: any) {
+                  notify.error(e?.message ?? "Failed to add to cart");
+                } finally {
+                  setAdding(false);
+                }
+              }}
+              disabled={adding}
+              className="mt-2 w-full border border-white/20 hover:border-white/50 text-xs uppercase tracking-widest py-2 disabled:opacity-50"
             >
-              Add to Bag
+              {adding ? "Adding..." : "Add to Bag"}
             </button>
           </div>
         )}

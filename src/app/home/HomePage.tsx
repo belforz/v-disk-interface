@@ -1,38 +1,169 @@
-import { useEffect, useState } from "react";
-import { fetchJSON } from "@app/lib/api";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import type { Vinyl } from "@app/types";
 import { VinylCard } from "@app/components/VinylCard";
+import { useVinyl } from "@app/hooks";
+import SearchBar from "@app/components/SearchBar";
+import Hero from "@app/components/Hero";
+import Carrousel from "@app/components/Carrousel";
+
+// small debounce helper
+function debounce<T extends (...args: any[]) => void>(fn: T, wait = 300) {
+  let t: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (t) clearTimeout(t);
+    t = setTimeout(() => fn(...args), wait);
+  };
+}
 
 export default function HomePage() {
-  const [vinyls, setVinyls] = useState<Vinyl[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { vinyls, loading, error, getAllVinyl, getHomeVinyl, getVinylByTerm } =
+    useVinyl();
 
+  // Carrega os discos de destaque para a página inicial usando getHomeVinyl
+  const [homeVinyls, setHomeVinyls] = useState<Vinyl[]>([]);
+  const [allVinyls, setAllVinyls] = useState<Vinyl[]>([]);
+
+  // carrega e sincroniza allVinyls com o hook de backend (defensivo)
+  useEffect(() => {
+    let mounted = true;
+
+    // Se o hook já tem vinyls, use-os imediatamente
+    if (Array.isArray(vinyls) && vinyls.length > 0) {
+      setAllVinyls(vinyls);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    // Caso contrário, tente buscar e logue o resultado para debugar
+    const loadAll = async () => {
+      try {
+        const res = await getAllVinyl?.(100, 1);
+        console.debug("getAllVinyl response:", res);
+        if (!mounted) return;
+        const list: Vinyl[] = Array.isArray(res)
+          ? res
+          : Array.isArray((res as any)?.data)
+          ? (res as any).data
+          : Array.isArray(vinyls)
+          ? vinyls
+          : [];
+        setAllVinyls(list);
+      } catch (err) {
+        console.debug("getAllVinyl failed:", err);
+      }
+    };
+
+    loadAll();
+    return () => {
+      mounted = false;
+    };
+  }, [getAllVinyl, vinyls]);
 
   useEffect(() => {
-    fetchJSON<Vinyl[]>("/api/products")
-      .then(data => {setVinyls(data);
-        console.log("vinyls", data)
+    let mounted = true;
+    getHomeVinyl()
+      .then((res) => {
+        if (!mounted) return;
+        // aceita formatos: array direto ou envelope { data: [...] }
+        const list: Vinyl[] = Array.isArray(res)
+          ? res
+          : Array.isArray((res as any)?.data)
+          ? (res as any).data
+          : [];
+        setHomeVinyls(list);
       })
-      .catch(err => setError(String(err)));
-  }, []);
-  
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [getHomeVinyl]);
+
+  // stable inner search handler
+  const handleSearchInner = useCallback(
+    async (q: string) => {
+      // if (!q || q.trim().length === 0) {
+      //   // reload defaults
+      //   const res = await getHomeVinyl();
+      //   const list: Vinyl[] = Array.isArray(res)
+      //     ? res
+      //     : Array.isArray((res as any)?.data)
+      //     ? (res as any).data
+      //     : [];
+      //   setHomeVinyls(list);
+      //   return;
+      // }
+      try {
+        const results = await getVinylByTerm(q);
+        const list: Vinyl[] = Array.isArray(results)
+          ? results
+          : Array.isArray((results as any)?.data)
+          ? (results as any).data
+          : [];
+        setHomeVinyls(list);
+      } catch (e) {
+        // ignore — getVinylByTerm sets error in hook
+      }
+    },
+    [getVinylByTerm]
+  );
+
+  // memoize the debounced handler so it isn't recreated each render
+  const handleSearch = useMemo(
+    () => debounce(handleSearchInner, 350),
+    [handleSearchInner]
+  );
+
+  console.log(allVinyls);
 
   return (
     <section className="mx-auto max-w-7xl px-4">
       <section className="py-10 md:py-14">
-        <h1 className="sr-only">Beyoncé x Levi’s — coleção</h1>
+        <Hero />
 
-        {error && (
-          <div className="mb-6 text-red-400 text-sm">
-            Falha ao carregar produtos: {error}
+        <div className="flex-1 flex justify-end mb-8">
+          <div className="w-full max-w-md mb-10">
+            <SearchBar onSearch={handleSearch} />
           </div>
-        )}
-        
-        <div className="grid gap-10 md:grid-cols-3">
-          {vinyls.map(vinyl => (
-            <VinylCard key={vinyl.id} vinyl={vinyl} />
-          ))}
-        
+        </div>
+        <div className="py-10">
+          <Carrousel items={homeVinyls} />
+        </div>
+        {/* <div className="flex flex-row items-center justify-center gap-10 mb-10">
+          <div className="flex-shrink-0">
+            <img
+              src={`/images/v-disk-home.png`}
+              className="w-full max-w-[200px] sm:max-w-[260px] md:max-w-[320px] lg:max-w-[400px] aspect-square object-cover mx-auto"
+              loading="lazy"
+              alt="v-disk home"
+            />
+            <div className="text-2xl text-white mt-2 text-center">
+            <p>Welcome to V-Disk! Explore our curated vinyl collection.</p>
+            </div>
+          </div>
+        </div> */}
+  <div className="relative col-span-12 md:col-span-8 xl:col-span-6 mt-8">
+          {error && (
+            <div className="mb-6 text-red-400 text-sm">
+              Falha ao carregar produtos: {error.message}
+            </div>
+          )}
+
+          {!error && loading && allVinyls.length === 0 && (
+            <div className="text-sm text-white/60 mb-4">Carregando...</div>
+          )}
+
+          {!loading && !error && allVinyls.length === 0 && (
+            <div className="text-sm text-white/50">
+              Nenhum produto encontrado.
+            </div>
+          )}
+
+          <div className="grid gap-10 md:grid-cols-3">
+            {allVinyls.map((v) => (
+              <VinylCard key={v.id} vinyl={v} />
+            ))}
+          </div>
         </div>
       </section>
     </section>

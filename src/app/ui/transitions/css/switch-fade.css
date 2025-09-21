@@ -1,0 +1,12 @@
+/* componente novo entrando */
+.sfade-enter { opacity: 0; }
+.sfade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in-out;
+}
+/* componente antigo saindo */
+.sfade-exit { opacity: 1; }
+.sfade-exit-active {
+  opacity: 0;
+  transition: opacity 250ms ease-in-out;
+}

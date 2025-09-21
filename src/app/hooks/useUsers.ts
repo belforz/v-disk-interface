@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { User, ApiError} from "@app/types";
-import axios from "axios";
+import { apiUsers } from "@app/lib/api";
+
 
 const USERS_BASE_URL = import.meta.env.VITE_API_USERS;
 
@@ -9,89 +10,94 @@ export function useUser() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
-  async function getAllUsers() {
+  const getAllUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${USERS_BASE_URL}/`);
-      setUsers(response.data);
+      const response = await apiUsers.get(`${USERS_BASE_URL}`);
+      const payload = response.data?.data ?? response.data;
+      setUsers(payload);
     } catch (error: any) {
       setError({message: error.message , statusCode: error.response?.status});
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function getUserById(id: string) {
+  const getUserById = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${USERS_BASE_URL}/${id}`);
-      return response.data;
+      const response = await apiUsers.get(`${USERS_BASE_URL}/${id}`);
+      return response.data?.data ?? response.data;
     } catch (error: any) {
       setError({message: error.message , statusCode: error.response?.status});
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function createUser(payload: User) {
+  const createUser = useCallback(async (payload: User) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${USERS_BASE_URL}/`, payload);
-      setUsers((prev) => [...prev, response.data]);
+      const response = await apiUsers.post(`${USERS_BASE_URL}`, payload);
+      const created = response.data?.data ?? response.data;
+      setUsers((prev) => [...prev, created]);
+      return created;
     } catch (error: any) {
       setError({message: error.message , statusCode: error.response?.status});
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function updateUser(id: string, payload: User) {
+  const updateUser = useCallback(async (id: string, payload: User) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.patch(`${USERS_BASE_URL}/${id}`, payload);
-      setUsers((prev) =>
-        prev.map((user) => (user.id === id ? response.data : user))
-      );
+      const response = await apiUsers.patch(`${USERS_BASE_URL}/${id}`, payload);
+      const updated = response.data?.data ?? response.data;
+      setUsers((prev) => prev.map((user) => (user.id === id ? updated : user)));
     } catch (error: any) {
       setError({message: error.message , statusCode: error.response?.status});
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function deleteUser(id: string) {
+  const deleteUser = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
     try {
-      await axios.delete(`${USERS_BASE_URL}/${id}`);
-      setUsers((prev) => prev.filter((user) => user.id !== id));
+      const response = await apiUsers.delete(`${USERS_BASE_URL}/${id}`);
+      // Some APIs return the deleted resource or an acknowledgement
+      if (response.status === 200) {
+        setUsers((prev) => prev.filter((user) => user.id !== id));
+      }
     } catch (error: any) {
       setError({message: error.message , statusCode: error.response?.status});
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function resendEmailUser(id: string ){
+  const resendEmailUser = useCallback(async (id: string ) =>{
     setLoading(true);
     setError(null);
     try {
-        const response = await axios.post(`${USERS_BASE_URL}/resend-verifcation/${id}`);
-        if(response.status === 200){
-            return response.data, response.status;
-        }
+    const response = await apiUsers.post(`${USERS_BASE_URL}/resend-verifcation/${id}`);
+    if(response.status === 200){
+      return response.data?.data ?? response.data;
+    }
     } catch (error: any) {
         setError({message: error.message , statusCode: error.response?.status});
     } finally {
         setLoading(false);
     }
-  }
+  }, []);
 
-  async function getUserToken(token: string) {
+  const getUserToken = useCallback(async (token: string) => {
     if (!token) {
       setError({ message: "Token is invalid, expired or null", statusCode: 400 });
       return;
@@ -99,22 +105,22 @@ export function useUser() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${USERS_BASE_URL}/verify/${token}`);
-      return response.data;
+      const response = await apiUsers.get(`${USERS_BASE_URL}/verify/${token}`);
+      return response.data?.data ?? response.data;
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function resetUserState() {
+  const resetUserState = useCallback(async () => {
     setUsers([]);
     setLoading(false);
     setError(null);
-  }
+  }, []);
 
-  return {
+  return useMemo(() => ({
     users,
     loading,
     error,
@@ -126,5 +132,5 @@ export function useUser() {
     resetUserState,
     resendEmailUser,
     getUserToken
-  };
+  }), [users, loading, error, getAllUsers, getUserById, createUser, updateUser, deleteUser, resetUserState, resendEmailUser, getUserToken]);
 }

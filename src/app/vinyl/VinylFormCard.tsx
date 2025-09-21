@@ -8,7 +8,10 @@ import {
   faXmark,
   faPlus,
   faEye,
+  faUpload,
 } from "@fortawesome/free-solid-svg-icons";
+import { uploadFile } from "@app/lib/fileUpload";
+import { notify } from "@app/lib/toast";
 
 type Mode = "create" | "edit" | "view";
 
@@ -48,25 +51,43 @@ export default function VinylFormCard({
 
   const [formData, setFormData] = useState<Vinyl>(data ?? emptyVinyl());
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [uploading, setUploading] = useState<boolean>(false);
+  
   useEffect(() => {
     if (isCreateMode) setFormData(emptyVinyl());
     else if (data) setFormData(data);
   }, [mode, data, isCreateMode]);
 
-  const preview = useMemo(() => formData.coverPath, [formData.coverPath]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const preview = previewUrl ?? formData.coverPath;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isViewMode) return;
 
-    const payload: Vinyl = {
+    // Normalize image paths before submitting to backend
+    const normalize = (p: string) => {
+      if (!p) return p;
+      // blob/object URLs are previews only — should have been replaced already
+      if (p.startsWith("blob:")) {
+        // This shouldn't happen as we should have uploaded the file by now
+        notify.error("Image upload wasn't completed. Please try uploading the image again.");
+        return ""; // Return empty to prevent broken images
+      }
+      // If operator accidentally used /public/images, convert to /images
+      if (p.startsWith("/public/images/")) return p.replace("/public/images/", "/images/");
+      return p;
+    };
+
+    const normalized: Vinyl = {
       ...formData,
+      coverPath: normalize(formData.coverPath),
+      gallery: (formData.gallery || []).map((g) => normalize(g)),
       createdAt: formData.createdAt ?? (new Date().toISOString() as any),
       updatedAt: new Date().toISOString() as any,
     };
 
-    onSubmit?.(payload);
+    onSubmit?.(normalized);
   }
 
   function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
@@ -81,22 +102,86 @@ export default function VinylFormCard({
     onCancel?.();
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    // First create a local preview
     const url = URL.createObjectURL(file);
-    setFormData((p) => ({ ...p, coverPath: url }));
-
-    //todo ENVIAR
+    setPreviewUrl(url);
+    
+    try {
+      setUploading(true);
+      
+      // Show loading state
+      notify.info("Uploading image...");
+      
+      // Upload file to server
+      const path = await uploadFile(file);
+      
+      // Update form with new path
+      setFormData((p) => ({ ...p, coverPath: path }));
+      
+      notify.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Upload error:", error);
+      
+      // Fallback - use local path but warn user
+      const sanitized = file.name.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9.\-_]/g, "");
+      const appPath = `/images/${sanitized}`;
+      setFormData((p) => ({ ...p, coverPath: appPath }));
+      
+      notify.error("Failed to upload image to server. The image reference has been saved but you'll need to manually upload the file to the server's public/images directory.");
+    } finally {
+      setUploading(false);
+    }
   }
 
-  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+  async function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
+    
+    // First create a local preview
     const url = URL.createObjectURL(file);
-    setFormData((p) => ({ ...p, coverPath: url }));
+    setPreviewUrl(url);
+    
+    try {
+      setUploading(true);
+      
+      
+      // Upload file to server
+      const path = await uploadFile(file);
+      
+      // Update form with new path
+      setFormData((p) => ({ ...p, coverPath: path }));
+      
+      notify.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Upload error:", error);
+      
+      // Fallback - use local path but warn user
+      const sanitized = file.name.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9.\-_]/g, "");
+      const appPath = `/images/${sanitized}`;
+      setFormData((p) => ({ ...p, coverPath: appPath }));
+      
+      notify.error("Failed to upload image to server. The image reference has been saved but you'll need to manually upload the file to the server's public/images directory.");
+    } finally {
+      setUploading(false);
+    }
   }
+
+  // Revoke preview blob URLs to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  // The image file is uploaded to the server via API, which stores it in the public/images folder
+  // We use FormData to send the file to the server and receive back the path where it was saved
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -151,20 +236,40 @@ export default function VinylFormCard({
 
       <div className="grid md:grid-cols-2 gap-6 items-start">
         <div
-          className="bg-neutral-900 border border-white/10 mb-4 p-2 cursor-pointer"
+          className="bg-neutral-900 border border-white/10 mb-4 p-2 cursor-pointer relative"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !uploading && fileInputRef.current?.click()}
         >
           {preview ? (
-            <img
-              src={preview}
-              alt={formData.title || "vinyl"}
-              className="w-full aspect-[3/4] object-cover object-center"
-            />
+            <>
+              <img
+                src={preview}
+                alt={formData.title || "vinyl"}
+                className="w-full aspect-[3/4] object-cover object-center"
+              />
+              {uploading && (
+                <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                  <div className="text-white/80 flex flex-col items-center">
+                    <FontAwesomeIcon icon={faUpload} spin size="2x" className="mb-2" />
+                    <span>Uploading...</span>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="w-full aspect-[3/4] grid place-items-center text-xs text-white/50">
-              Drag an image or select a file.
+              {uploading ? (
+                <div className="text-white/80 flex flex-col items-center">
+                  <FontAwesomeIcon icon={faUpload} spin size="2x" className="mb-2" />
+                  <span>Uploading...</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <FontAwesomeIcon icon={faUpload} className="mb-2" size="2x" />
+                  <span>Drag an image or select a file.</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -175,7 +280,7 @@ export default function VinylFormCard({
             capture
             className="hidden"
             onChange={handleFileChange}
-            disabled={isViewMode}
+            disabled={isViewMode || uploading}
           />
         </div>
 

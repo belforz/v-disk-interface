@@ -1,9 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { CartOrder, CartUser, ApiError} from "@app/types";
-import axios from "axios";
+import { apiCarts } from "@app/lib/api";
 
-
-const CART_BASE_URL = import.meta.env.VITE_API_CARTS;
 
 export function useCart() {
   const [cart, setCart] = useState<CartOrder[]>([]);
@@ -12,128 +10,136 @@ export function useCart() {
   const [error, setError] = useState<ApiError | null>(null);
 
 
-  async function getUserCart(userId: string){
+  const getUserCart = useCallback(async (userId: string) =>{
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${CART_BASE_URL}/${userId}`);
+      const response = await apiCarts.get(`/${userId}`);
       setCartUser((prev) => [...prev, response.data]);
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function createUserCart(userId: string) {
+  const createUserCart = useCallback(async (userId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${CART_BASE_URL}/${userId}`);
+      const response = await apiCarts.post(`/${userId}`);
       setCartUser((prev) => [...prev, response.data]);
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function deleteUserCart(userId: string) {
+  const deleteUserCart = useCallback(async (userId: string) => {
     setLoading(true);
     setError(null);
     try {
-      await axios.delete(`${CART_BASE_URL}/${userId}`);
+      await apiCarts.delete(`/${userId}`);
       setCartUser((prev) => prev.filter((item) => item.userId !== userId));
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function updateUserCart(userId: string, payload: CartOrder[]) {
+  const updateUserCart = useCallback(async (userId: string, payload: CartOrder[]) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.put(`${CART_BASE_URL}/${userId}`, payload);
+      const response = await apiCarts.put(`/${userId}`, payload);
       setCartUser((prev) => prev.map((item) => (item.userId === userId ? response.data : item)));
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function addVinylToUserCart(userId: string, vinylId:string){
+  const addVinylToUserCart = useCallback(async (userId: string, vinylId:string) =>{
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${CART_BASE_URL}/${userId}/item/${vinylId}`);
+      const response = await apiCarts.post(`/${userId}/item/${vinylId}`);
       setCartUser((prev) => prev.map((item) => (item.userId === userId ? response.data : item)));
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
-  async function removeVinylFromUserCart(userId: string, vinylId:string){
+  }, []);
+  const removeVinylFromUserCart = useCallback(async (userId: string, vinylId:string) =>{
     setLoading(true);
     setError(null);
     try {
-      await axios.delete(`${CART_BASE_URL}/${userId}/item/${vinylId}`);
+      await apiCarts.delete(`/${userId}/item/${vinylId}`);
       setCartUser((prev) => prev.map((item) => (item.userId === userId ? { ...item, vinyls: item.vinyls.filter((id) => id !== vinylId) } : item)));
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function getCart(userId: string) {
+  const getCart = useCallback(async (userId: string) => {
     try {
-      const response = await axios.get(`${CART_BASE_URL}/cart/${userId}`);
+      const response = await apiCarts.get(`/${userId}`);
       return response.data; // Retorna o carrinho do usuário
     } catch (error) {
       throw new Error("Failed to fetch cart");
     }
-  }
+  }, []);
 
-  async function addItemToCart(userId: string, vinylId: string, quantity: number) {
+  const addItemToCart = useCallback(async (userId: string, vinylId: string, quantity: number) => {
     try {
-      const response = await axios.post(`${CART_BASE_URL}/cart/${userId}/item/${vinylId}`, { qt: quantity });
+      
+      const response = await apiCarts.post(`/${userId}/item/${vinylId}`, { quantity });
       return response.data; 
     } catch (error) {
       throw new Error("Failed to add item to cart");
     }
-  }
+  }, []);
 
-  async function removeItemFromCart(userId: string, vinylId: string) {
+  const removeItemFromCart = useCallback(async (userId: string, vinylId: string) => {
     try {
-      const response = await axios.delete(`${CART_BASE_URL}/cart/${userId}/item/${vinylId}`);
+      const response = await apiCarts.delete(`/${userId}/item/${vinylId}`);
       return response.data; 
     } catch (error) {
       throw new Error("Failed to remove item from cart");
     }
-  }
+  }, []);
 
-  async function updateCart(userId: string, cart: CartOrder[]) {
+  const updateCart = useCallback(async (userId: string, cart: CartOrder[]) => {
     try {
-      const response = await axios.put(`${CART_BASE_URL}/cart/${userId}`, { cart });
-      return response.data; 
+      const payload: Record<string, number> = {};
+      cart.forEach((c: any) => {
+        const id = c.vinylId ?? c.id;
+        const qty = (c.qt ?? c.qty ?? c.quantity) as number || 1;
+        payload[id] = qty;
+      });
+      const response = await apiCarts.put(`/${userId}`, payload);
+      return response.data;
     } catch (error) {
       throw new Error("Failed to update cart");
     }
-  }
+  }, []);
 
-  async function deleteCart(userId: string) {
+  const deleteCart = useCallback(async (userId: string) => {
     try {
-      const response = await axios.delete(`${CART_BASE_URL}/cart/${userId}`);
+      const response = await apiCarts.delete(`/${userId}`);
       return response.data; 
     } catch (error) {
       throw new Error("Failed to delete cart");
     }
-  }
-  return {
+  }, []);
+
+  return useMemo(() => ({
     cart,
     cartUser,
     loading,
@@ -149,5 +155,5 @@ export function useCart() {
     removeItemFromCart,
     updateCart,
     deleteCart
-  }
+  }), [cart, cartUser, loading, error, getUserCart, createUserCart, deleteUserCart, updateUserCart, addVinylToUserCart, removeVinylFromUserCart, getCart, addItemToCart, removeItemFromCart, updateCart, deleteCart]);
 }

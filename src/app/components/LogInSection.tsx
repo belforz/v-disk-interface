@@ -3,8 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState, useEffect } from "react";
 import ForgotPasswordPage from "../login/ForgetPassword";
 import { useAuth } from "@app/hooks";
+import { useCartFacade } from "@app/hooks/useCartFacade";
 import StatusHandler from "./StatusHandler";
 import { useNavigate } from "react-router-dom";
+import { notify } from "@app/lib/toast";
 
 export function LogInSection() {
   const [forgetPassword, setForgetPassword] = useState(false);
@@ -15,8 +17,6 @@ export function LogInSection() {
   const [showErrorOverlay, setShowErrorOverlay] = useState(false);
   const navigate = useNavigate();
 
-  // navigation is handled after awaiting `auth(...)` in handleSubmit
-  // removed automatic navigation here to avoid duplicate/early redirects
 
   useEffect(() => {
     setShowErrorOverlay(Boolean(error));
@@ -24,21 +24,24 @@ export function LogInSection() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log('Login submitted, calling auth...');
-    const result = await auth(email, password);
-    console.log('Auth result:', result);
-    
-    if (result?.user) {
-      console.log('User found, roles:', result.user.roles);
-      if (Array.isArray(result.user.roles) && result.user.roles.includes("ADMIN")) {
-        console.log('Navigating to admin dashboard...');
-        navigate("/login/admin");
+    try {
+      const result = await auth(email, password);
+      if (result?.user) {
+        // Guest cart merging removed; no action required after login
+
+        if (Array.isArray(result.user.roles) && result.user.roles.includes("ADMIN")) {
+          navigate("/login/admin");
+        } else {
+          navigate("/login/user");
+        }
       } else {
-        console.log('Navigating to user dashboard...');
-        navigate("/login/user");
+        // no user returned — show generic error
+        notify.error("Login failed: no user information received");
       }
-    } else {
-      console.log('No user in result, not redirecting');
+    } catch (err: any) {
+      // auth throws sanitized ApiError now; show friendly message
+      notify.error(err?.message || "Login failed");
+      setShowErrorOverlay(true);
     }
   }
 

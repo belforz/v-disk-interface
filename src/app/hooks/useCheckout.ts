@@ -1,63 +1,60 @@
-import { useState } from "react";
-import type { CheckoutOrder, ApiError} from "@app/types";
-import axios from "axios";
+import { useState, useCallback, useMemo } from "react";
+import type { ApiError } from "@app/types";
+import { apiCheckout } from "@app/lib/api";
 
 const CHECKOUT_BASE_URL = import.meta.env.VITE_API_CHECKOUT;
 
 export function useCheckout() {
-  const [checkout, setCheckout] = useState<CheckoutOrder[]>([]);
+  const [checkout, setCheckout] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
-  async function createCheckoutSession(paymentId: string , payload: CheckoutOrder) {
+  const createCheckoutSession = useCallback(async (request: { userId: string; paymentId: string }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(
-        `${CHECKOUT_BASE_URL}/`,
-        { ...payload, paymentId: payload.paymentId ?? paymentId }
-      );
+      const response = await apiCheckout.post(`/`, request);
       setCheckout((prev) => [...prev, response.data]);
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function getCheckoutSession(paymentId: string) {
+  const getCheckoutSession = useCallback(async (paymentId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${CHECKOUT_BASE_URL}/${paymentId}`);
+      const response = await apiCheckout.get(`${CHECKOUT_BASE_URL}/${paymentId}`);
       setCheckout((prev) => [...prev, response.data]);
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function deleteCheckoutSession(paymentId: string) {
+  const deleteCheckoutSession = useCallback(async (paymentId: string) => {
     setLoading(true);
     setError(null);
     try {
-      await axios.delete(`${CHECKOUT_BASE_URL}/${paymentId}`);
+      await apiCheckout.delete(`${CHECKOUT_BASE_URL}/${paymentId}`);
       setCheckout((prev) => prev.filter((item) => item.paymentId !== paymentId));
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function resetOrderState() {
+  const resetOrderState = useCallback(async () => {
     setCheckout([]);
     setLoading(false);
     setError(null);
-  }
+  }, []);
 
-  return {
+  return useMemo(() => ({
     checkout,
     loading,
     error,
@@ -65,5 +62,5 @@ export function useCheckout() {
     getCheckoutSession,
     deleteCheckoutSession,
     resetOrderState
-  };
+  }), [checkout, loading, error, createCheckoutSession, getCheckoutSession, deleteCheckoutSession, resetOrderState]);
 }
