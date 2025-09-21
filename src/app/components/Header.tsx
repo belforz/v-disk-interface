@@ -51,7 +51,11 @@ export function Header() {
             Artists
           </NavLink>
 
-          <button onClick={redirectToPanel} className="nav-link">Dashboard</button>
+          {user && (
+            <button onClick={redirectToPanel} className="nav-link">
+              Dashboard
+            </button>
+          )}
         </div>
 
         <Link to="/" className="text-white">
