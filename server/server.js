@@ -7,7 +7,7 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS handling: allow cross-origin requests for uploads.
+// CORS handling: allow cross-origin requests for uploads
 // Configure via environment variable `CORS_ORIGIN`. Default is '*' (public).
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
