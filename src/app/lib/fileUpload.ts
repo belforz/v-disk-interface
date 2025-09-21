@@ -1,6 +1,9 @@
 // NOTE: Uploads should go to the image server (separate from the main API).
-// Configure the upload server URL via VITE_API_UPLOAD (e.g. http://localhost:3000)
+// Prefer Cloudinary when configured via VITE_CLOUDINARY_CLOUD + VITE_CLOUDINARY_PRESET.
+// Otherwise, fall back to the local image upload server (VITE_API_UPLOAD).
 const UPLOAD_BASE = import.meta.env.VITE_API_UPLOAD || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD || '';
+const CLOUD_PRESET = import.meta.env.VITE_CLOUDINARY_PRESET || '';
 
 // We intentionally do not use the shared `api` axios instance here because that instance
 // is configured to point to your main backend API (VITE_API_URL). Uploads need to hit the
@@ -29,7 +32,33 @@ export async function uploadFile(file: File, folder = 'images'): Promise<string>
     },
   };
   
-  // Send the request to the image server upload endpoint
+  // If Cloudinary is configured, upload directly to Cloudinary and return the secure URL
+  if (CLOUD_NAME && CLOUD_PRESET) {
+    try {
+      const cloudForm = new FormData();
+      cloudForm.append('file', file);
+      cloudForm.append('upload_preset', CLOUD_PRESET);
+      cloudForm.append('folder', folder);
+
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
+        method: 'POST',
+        body: cloudForm,
+      });
+
+      if (!cloudRes.ok) {
+        const t = await cloudRes.text();
+        throw new Error(`Cloudinary upload failed: ${cloudRes.status} ${t}`);
+      }
+
+      const cloudData = await cloudRes.json();
+      return cloudData?.secure_url ?? `/images/${sanitizedName}`;
+    } catch (err) {
+      console.error('Cloudinary upload failed, falling back to local upload:', err);
+      // continue to local upload fallback below
+    }
+  }
+
+  // Send the request to the image server upload endpoint (fallback)
   try {
     const res = await fetch(`${UPLOAD_BASE}/api/upload`, {
       method: 'POST',

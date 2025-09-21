@@ -6,7 +6,6 @@ import SearchBar from "@app/components/SearchBar";
 import Hero from "@app/components/Hero";
 import Carrousel from "@app/components/Carrousel";
 
-// small debounce helper
 function debounce<T extends (...args: any[]) => void>(fn: T, wait = 300) {
   let t: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<T>) => {
@@ -108,7 +107,6 @@ export default function HomePage() {
     [getVinylByTerm]
   );
 
-  // memoize the debounced handler so it isn't recreated each render
   const handleSearch = useMemo(
     () => debounce(handleSearchInner, 350),
     [handleSearchInner]
@@ -116,18 +114,37 @@ export default function HomePage() {
 
   console.log(allVinyls);
 
+  const featuredVinyls = homeVinyls.filter((v) => v.isPrincipal);
+
   return (
     <section className="mx-auto max-w-7xl px-4">
-      <section className="py-10 md:py-14">
+      <section className="py-8 md:py-12">
         <Hero />
 
-        <div className="flex-1 flex justify-end mb-8">
-          <div className="w-full max-w-md mb-10">
-            <SearchBar onSearch={handleSearch} />
+        {/* Featured block: title, description, CTA, carousel */}
+        <div className="py-8">
+          <h2 className="font-display text-2xl md:text-3xl uppercase tracking-wider text-center">
+            Featured
+          </h2>
+          <p className="text-white/70 mt-3 mb-6 text-center max-w-2xl mx-auto">
+            Handpicked highlights from our collection — premium, collectible,
+            and sonically exceptional vinyl records chosen by our curators.
+          </p>
+
+          <div className="flex justify-center mb-6">
+            <a
+              href="/disks"
+              className="bg-black text-white px-6 py-3 text-sm uppercase tracking-widest inline-block hover:scale-105 hover:shadow-lg hover:bg-white hover:text-black transition-all duration-200 ease-in-out"
+            >
+              See Highlights
+            </a>
           </div>
-        </div>
-        <div className="py-10">
-          <Carrousel items={homeVinyls} />
+
+          <div className="mx-auto max-w-4xl">
+            <Carrousel
+              items={featuredVinyls.length ? featuredVinyls : homeVinyls}
+            />
+          </div>
         </div>
         {/* <div className="flex flex-row items-center justify-center gap-10 mb-10">
           <div className="flex-shrink-0">
@@ -142,7 +159,24 @@ export default function HomePage() {
             </div>
           </div>
         </div> */}
-  <div className="relative col-span-12 md:col-span-8 xl:col-span-6 mt-8">
+        <div className="flex-1 flex justify-end mb-8">
+          <div className="w-full max-w-md mb-10">
+            <SearchBar onSearch={handleSearch} />
+          </div>
+        </div>
+
+        {/* Catalog block */}
+
+        <div className="relative col-span-12 md:col-span-8 xl:col-span-6 mt-12">
+          <h2 className="font-display text-3xl uppercase tracking-wider mb-4">
+            Shop the Collection
+          </h2>
+          <p className="text-white/70 mb-6 max-w-3xl">
+            Explore our full catalog of vinyl records — new arrivals, classics,
+            and limited editions. Use the search above to filter by artist,
+            title or genre.
+          </p>
+
           {error && (
             <div className="mb-6 text-red-400 text-sm">
               Falha ao carregar produtos: {error.message}

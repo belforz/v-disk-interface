@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useCartFacade } from "@app/hooks/useCartFacade";
 import { notify } from "@app/lib/toast";
 import { useState } from "react";
+import { buildSrc } from "@app/lib/image";
 
 type Props = { vinyl: Vinyl };
 
@@ -14,24 +15,6 @@ export function VinylCard({ vinyl }: Props) {
   
 
   const rawCover = Array.isArray(vinyl.coverPath) ? vinyl.coverPath[0] : vinyl.coverPath;
-
-  // Build a safe image src:
-  // - blob: URLs and absolute http(s) URLs are used as-is
-  // - paths that start with '/' are treated as relative to the image server (VITE_API_UPLOAD)
-  // - otherwise fall back to placeholder
-  const UPLOAD_BASE = import.meta.env.VITE_API_UPLOAD || '';
-
-  function buildSrc(path?: string | null) {
-    if (!path) return '/images/placeholder.png';
-    if (path.startsWith('blob:')) return path;
-    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    if (path.startsWith('/')) {
-      // If an upload base is configured, prefix it (ensure no double slashes)
-      if (UPLOAD_BASE) return `${UPLOAD_BASE.replace(/\/$/, '')}${path}`;
-      return path; // assume same origin serves /images
-    }
-    return '/images/placeholder.png';
-  }
 
   return (
     <div className="group ">
