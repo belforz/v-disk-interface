@@ -40,5 +40,6 @@
     "vite": "latest",
     "vite-tsconfig-paths": "latest",
     "concurrently": "^8.2.0"
-  }
+  },
+  "engines": { "node": "20.x" }
 }
