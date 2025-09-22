@@ -11,6 +11,8 @@ export default function UserPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const userOrders = (orders ?? []).filter((o) => o.userId === user?.id);
+
   return (
     <div className="w-full bg-black">
       <div className="p-6 rounded-md overflow-hidden max-w-6xl mx-auto mb-6">
@@ -37,8 +39,8 @@ export default function UserPanel() {
         <div className="grid gap-6">
           {loading ? (
             <div className="text-center text-white/60 p-8">Loading orders...</div>
-          ) : orders && orders.length > 0 ? (
-            orders.map((o) => (
+          ) : userOrders.length > 0 ? (
+            userOrders.map((o) => (
               <OrderCardSimple key={o.id} order={o} />
             ))
           ) : (

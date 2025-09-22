@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useOrder } from "@app/hooks";
+import { useAuth, useOrder } from "@app/hooks";
 import type { Order, OrderItem } from "@app/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
@@ -50,6 +50,9 @@ export default function OrderCardSimple({ order, onView }: Props) {
   const [actionLoading, setActionLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [detailedOrder, setDetailedOrder] = useState<Order | null>(null);
+  const { user} = useAuth();
+
+  const isAdmin = user?.roles.includes("ADMIN")
 
   async function handleView() {
     try {
@@ -81,6 +84,7 @@ export default function OrderCardSimple({ order, onView }: Props) {
   }, 0);
 
   const totalItems = items.reduce((acc, it) => acc + (it.quantity ?? 1), 0);
+
 
   return (
     <div className="border border-white/10 bg-black/60 p-4 md:p-5">
@@ -114,7 +118,7 @@ export default function OrderCardSimple({ order, onView }: Props) {
           {totalItems} item(s) · <strong className="text-white">{formatMoney(total, "BRL")}</strong>
         </div>
 
-        {!expanded && (
+        {!expanded &&  !isAdmin && (
         <div className="flex gap-2">
           <button
             onClick={handleView}

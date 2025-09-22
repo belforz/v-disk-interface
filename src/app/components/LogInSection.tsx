@@ -32,10 +32,10 @@ export function LogInSection() {
         if (Array.isArray(result.user.roles) && result.user.roles.includes("ADMIN")) {
           navigate("/dashboard");
         } else {
-          navigate("/user");
+          navigate("/");
         }
       } else {
-        // no user returned — show generic error
+        
         notify.error("Login failed: no user information received");
       }
     } catch (err: any) {
