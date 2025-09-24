@@ -17,7 +17,7 @@ export default function TokenActionCard({ mode }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { getUserToken } = useUser();
-  const { changePassword } = useAuth();
+  const { changePasswordWithToken } = useAuth();
   const navigate = useNavigate();
 
   async function handleAction() {
@@ -46,7 +46,8 @@ export default function TokenActionCard({ mode }: Props) {
           return;
         }
 
-        await changePassword(password);
+        // Use the token-based change password for unauthenticated flow
+        await changePasswordWithToken(token, password);
         setSuccess(true);
         setTimeout(() => {
           navigate("/login");

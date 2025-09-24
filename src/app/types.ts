@@ -31,7 +31,6 @@ export type OrderItem = {
 export type Order = {
   id: string;
   userId: string;
-  // Newer backend uses vinylIds array for simple reference and qt for total quantity
   vinylIds?: string[] | null;
   items?: OrderItem[] | null; // lista de items com qty por item (optional snapshot)
   qt?: number | null;         // soma das quantidades (opcional; backend pode preencher)

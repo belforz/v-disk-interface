@@ -129,7 +129,7 @@ export function LogInSection() {
               className="w-full mt-2 border border-white/20 hover:border-white/50 py-2 text-xs uppercase tracking-widest"
               disabled={loading}
             >
-              {loading ? "Entrando..." : "Log in"}
+              {loading ? "Trying..." : "Log in"}
             </button>
           </form>
 

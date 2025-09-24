@@ -12,7 +12,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
-  // Remove sensitive fields that may be returned by the API (e.g. password)
+
   const removeSensitiveFields = (obj: any): any => {
     if (obj == null || typeof obj !== "object") return obj;
     if (Array.isArray(obj)) return obj.map(removeSensitiveFields);
@@ -28,10 +28,8 @@ export function useAuth() {
   const sanitizeUser = (u: any): User | null => {
     if (!u || typeof u !== "object") return null;
     const cleaned = removeSensitiveFields(u);
-    // normalize common id fields to `id` so frontend code can rely on `user.id`
     const normalized = { ...cleaned } as any;
     if (normalized.id == null) normalized.id = cleaned._id ?? u?.id ?? u?.userId ?? null;
-    // Ensure roles is an array (best-effort)
     if (normalized.roles && !Array.isArray(normalized.roles)) {
       normalized.roles = [normalized.roles];
     }
@@ -109,11 +107,30 @@ export function useAuth() {
 
   // Token refresh is not supported by backend; users must re-authenticate on 401.
 
-  const changePassword = useCallback(async (newPassword: string) => {
+  // const changePassword = useCallback(async (newPassword: string) => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const response = await apiAuth.post("/change-password", { newPassword });
+  //     const data = response.data;
+  //     const userValue: any = data?.user ?? data?.data?.user ?? null;
+  //     setUser(sanitizeUser(userValue));
+  //   } catch (err: any) {
+  //     const apiErr = { message: err?.response?.data?.message || err?.message || "Failed to change password", statusCode: err?.response?.status } as ApiError;
+  //     setError(apiErr);
+  //     throw apiErr;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [setUser]);
+
+ 
+  const changePasswordWithToken = useCallback(async (token: string, newPassword: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiAuth.post("/change-password", { newPassword });
+      const url = `/change-password?token=${encodeURIComponent(token)}`;
+      const response = await apiAuth.post(url, { newPassword });
       const data = response.data;
       const userValue: any = data?.user ?? data?.data?.user ?? null;
       setUser(sanitizeUser(userValue));
@@ -128,7 +145,6 @@ export function useAuth() {
 
  
   useEffect(() => {
-    // Backend has no refresh endpoint; do not register a refresher. Register logout handler only.
     setLogoutHandler(() => {
       void logout();
     });
@@ -140,7 +156,7 @@ export function useAuth() {
     user,
     auth,
     verifyEmail,
-    changePassword,
+    changePasswordWithToken,
     logout,
-  }), [token, loading, error, user, auth, verifyEmail, changePassword, logout]);
+  }), [token, loading, error, user, auth, verifyEmail, changePasswordWithToken, logout]);
 }

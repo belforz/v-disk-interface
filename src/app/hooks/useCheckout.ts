@@ -4,6 +4,9 @@ import { apiCheckout } from "@app/lib/api";
 
 const CHECKOUT_BASE_URL = import.meta.env.VITE_API_CHECKOUT;
 
+
+//will be removed whenn refact is applied
+
 export function useCheckout() {
   const [checkout, setCheckout] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

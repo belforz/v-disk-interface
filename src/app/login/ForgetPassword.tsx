@@ -1,7 +1,25 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
+import { useEmail } from "@app/hooks";
+import { notify } from "@app/lib/toast";
 
 export default function ForgotPasswordPage() {
+  const { emailChangePassword, loading, error } = useEmail();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await emailChangePassword(email);
+      setEmail("");
+      navigate("/login");
+    } catch (error) {
+      notify.error("Failed to send password reset email.");
+    }
+  };
+
   return (
     <section className="w-full max-w-md border border-white/10 bg-black/60 p-5 md:p-6 rounded-none">
       <div className="w-full max-w-md border border-white/10 bg-black/60 p-6 md:p-8">
@@ -12,7 +30,7 @@ export default function ForgotPasswordPage() {
           Enter your email and we’ll send you instructions to reset your password.
         </p>
 
-        <form className="mt-6 space-y-4">
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <label className="block">
             <span className="text-xs text-white/60">E-mail</span>
             <input
@@ -20,6 +38,8 @@ export default function ForgotPasswordPage() {
               className="mt-1 w-full bg-black border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"
               placeholder="you@example.com"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </label>
 
@@ -40,20 +60,22 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="grid gap-2">
-            <Link to="/">
-              <button
-                type="button"
-                className="w-full border border-white/20 hover:border-white/50 py-2 text-[11px] uppercase tracking-widest"
-              >
-                Back to Home
-              </button>
-            </Link>
-          
+          <Link to="/">
+            <button
+              type="button"
+              className="w-full border border-white/20 hover:border-white/50 py-2 text-[11px] uppercase tracking-widest"
+            >
+              Back to Home
+            </button>
+          </Link>
         </div>
 
         <p className="mt-5 text-center text-[11px] text-white/60">
           Still need help?{" "}
-          <a href="mailto:macedobeiramar@hotmail.com" className="underline hover:text-white">
+          <a
+            href="mailto:macedobeiramar@hotmail.com"
+            className="underline hover:text-white"
+          >
             Contact Support
           </a>
         </p>

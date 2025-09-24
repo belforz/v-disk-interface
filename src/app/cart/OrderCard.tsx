@@ -17,7 +17,7 @@ function formatDate(d?: string | Date) {
   );
 }
 
-function formatMoney(value = 0, currency = "USD") {
+function formatMoney(value = 0, currency = "BRL") {
   return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency,

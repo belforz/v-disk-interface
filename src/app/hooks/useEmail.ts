@@ -29,8 +29,9 @@ export function useEmail() {
   const emailChangePassword = useCallback(async (to:string) => {
     setLoading(true);
     setError(null);
-    try {
-        const response = await apiEmails.post(`${EMAIL_BASE_URL}/change-password`, { to });
+  try {
+    const url = `${EMAIL_BASE_URL}/change-password?to=${encodeURIComponent(to)}`;
+    const response = await apiEmails.post(url, {});
         if (response.status === 200) {
            notify.success("Email sent successfully")
         }

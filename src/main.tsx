@@ -16,7 +16,7 @@ function RehydrateUser() {
       if (t) setToken(t);
       if (u) setUser(JSON.parse(u));
     } catch (e) {
-      // ignore
+      
     }
   }, [setToken, setUser]);
   return null;

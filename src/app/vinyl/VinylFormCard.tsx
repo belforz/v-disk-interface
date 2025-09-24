@@ -340,7 +340,7 @@ export default function VinylFormCard({
           </label>
 
           <label className="block">
-            <span className="text-xs text-white/60">Price (USD)</span>
+            <span className="text-xs text-white/60">Price (BRL)</span>
             <input
               type="number"
               className="mt-1 w-full bg-black border border-white/20 px-3 py-2 text-sm outline-none focus:border-white/50"

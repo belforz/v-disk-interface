@@ -1,14 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
 import { LogInSection } from "@app/components/LogInSection";
 import { SignUpSection } from "@app/components/SingUpSection";
-import { useAuth } from "@app/hooks";
+
 
 export default function LoginPage() {
-  const { role } = useParams();
   const [showForm, setShowForm] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const {auth, loading, error, logout, user, token} = useAuth()
 
   let imgSrc = `/images/v-disk-cover.png`;
   if (showSignUp) imgSrc = `/images/v-disk-women.png`;

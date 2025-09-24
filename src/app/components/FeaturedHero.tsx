@@ -179,7 +179,7 @@ export default function FeaturedHero({
                       <span className="ml-3 inline-block">
                         {new Intl.NumberFormat(undefined, {
                           style: "currency",
-                          currency: "USD",
+                          currency: "BRL",
                         }).format(item.price)}
                       </span>
                     )}

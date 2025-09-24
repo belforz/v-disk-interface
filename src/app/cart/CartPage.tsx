@@ -97,7 +97,7 @@ export default function CartPage() {
                 <div className="flex-1">
                   <div className="text-sm">{item.name ?? "Item"}</div>
                   <div className="text-white/60 text-xs mt-1">
-                    $ {(item.price ?? 0).toFixed(2)} USD
+                    R$ {(item.price ?? 0).toFixed(2)} BRL
                   </div>
 
                   <div className="mt-3 flex items-center gap-3">

@@ -155,7 +155,7 @@ export default function FeaturedSlideshow({
                         •{" "}
                         {new Intl.NumberFormat(undefined, {
                           style: "currency",
-                          currency: "USD"
+                          currency: "BRL"
                         }).format(it.price)}
                       </span>
                     )}

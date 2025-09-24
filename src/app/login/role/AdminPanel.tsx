@@ -48,7 +48,7 @@ export default function AdminPanel() {
       await createUser(payload as User).catch(() => {});
       notify.success("User created successfully!")
     } else {
-      // ensure isPrincipal is boolean
+     
       const vinyl = { ...(payload as Vinyl), isPrincipal: !!(payload as Vinyl).isPrincipal } as Vinyl;
       await createVinyl(vinyl).catch(() => {});
       notify.success("Vinyl created sucessfully!")
@@ -72,13 +72,13 @@ export default function AdminPanel() {
   // Separate handlers for orders
   async function handleOrderSubmit(payload: CreateOrderRequest | UpdateOrderRequest) {
     if (orderPanel.kind === "create") {
-      // For creation, we need a valid CreateOrderRequest with userId
+     
       if ((payload as CreateOrderRequest).userId) {
         await createOrder(payload as CreateOrderRequest).catch(() => {});
         notify.success("Order created successfully!");
       }
     } else if (orderPanel.kind === "edit") {
-      // For edits, we need the order ID
+      
       const orderId = orderPanel.data.id;
       if (orderId) {
         await updateOrder(orderId, payload as UpdateOrderRequest).catch(() => {});

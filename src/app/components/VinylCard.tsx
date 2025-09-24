@@ -30,7 +30,7 @@ export function VinylCard({ vinyl }: Props) {
           {vinyl.title}
         </h3>
 
-        <div className="text-white/60 text-xs">$ {vinyl.price} USD</div>
+        <div className="text-white/60 text-xs">$ {vinyl.price} BRL</div>
 
         <div className="text-white/60 text-xs truncate">
           Artist: {vinyl.artist}
