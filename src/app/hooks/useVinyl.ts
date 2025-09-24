@@ -82,9 +82,7 @@ export function useVinyl() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiVinyls.get(`${VINYL_BASE_URL}/search`, {
-        params: { t: term },
-      });
+      const response = await apiVinyls.get(`${VINYL_BASE_URL}/search?term=${term}`);
       return response.data.data;
     } catch (error: any) {
       setError({ message: error.message, statusCode: error.response?.status });
